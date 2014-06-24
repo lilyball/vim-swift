@@ -12,8 +12,12 @@ let s:save_cpo = &cpo
 set cpo&vim
 
 function! SyntaxCheckers_swift_swift_IsAvailable() dict
-    call system(self.getExec())
-    return v:shell_error == 0
+    let exec = self.getExec()
+    if exec =~ '^xcrun '
+        call system('xcrun -find ' . exec[6:])
+        return v:shell_error == 0
+    endif
+    return executable(exec)
 endfunction
 
 function! SyntaxCheckers_swift_swift_GetLocList() dict
