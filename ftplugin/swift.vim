@@ -13,7 +13,7 @@ set cpo&vim
 
 " Define a trivial :SwiftRun command
 " This may want to be expanded later
-command! -nargs=* -buffer SwiftRun w !xcrun swift -sdk $(xcrun -show-sdk-path -sdk macosx) -i - -- <args>
+command! -nargs=* -buffer -bang -bar SwiftRun call swift#Run(<bang>0, [<f-args>])
 
 " Map ⌘R to :SwiftRun
 nnoremap <buffer> <silent> <D-r> :SwiftRun<CR>
