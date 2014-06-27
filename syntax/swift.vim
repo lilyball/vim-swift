@@ -19,6 +19,7 @@ let &l:iskeyword = '@,' " isalpha(), should cover [a-zA-Z]
             \ . '_,'
             \ . '168,170,173,175,178-181,183-186,'
             \ . '188-190,192-214,216-246,248-255'
+let &l:isident = &l:iskeyword
 
 " Syntax definitions {{{1
 
@@ -53,26 +54,30 @@ syn keyword swiftType Any AnyObject AnyClass
 
 " Literals {{{2
 
-" Dec, Bin, Oct, Hex integer literals
+" Dec, Bin, Oct, Hex integer literals {{{3
 syn match swiftInteger display /\<\d[0-9_]*/
 syn match swiftInteger display /\<0b[01][01_]*/
 syn match swiftInteger display /\<0o\o[0-7_]*/
 syn match swiftInteger display /\<0x\x[0-9a-fA-F_]*/
 
-" float and hex float literals
+" Float and hex float literals {{{3
 " NB: Swift's documentation allows a decimal integer literal to also match a
 " float literal. We don't want that here.
 syn match swiftFloat display /\<\d[0-9_]*\.\d[0-9_]*\%([eE][-+]\?\d[0-9_]*\)\?\>/
 syn match swiftFloat display /\<\d[0-9_]*\%(\.\d[0-9_]*\)\?[eE][-+]\?\d[0-9_]*\>/
 syn match swiftFloat display /\<0x\x[0-9a-fA-F_]*\%(\.\x[0-9a-fA-F_]*\)\?[pP][-+]\?\d[0-9_]*\>/
 
-" String literals
+" String literals {{{3
 
 syn region swiftString start=/"/ end=/"/ keepend oneline contains=swiftStringEscape,swiftStringEscapeError,swiftInterpolation,@Spell
 syn match swiftStringEscapeError display contained /\\./
 syn match swiftStringEscape display contained /\\\%([0\\tnr"']\|x\x\{2}\|u\x\{4}\|U\x\{8}\)/ extend
 
 syn region swiftInterpolation matchgroup=swiftInterpolationDelim start=/\\(/ end=/)/ contained oneline contains=TOP
+
+" Operators {{{2
+
+syn match swiftOperator display ,\%(//\|/\*\)\@![-/=+!*%<>&|^~.]\+,
 
 " Comments {{{2
 

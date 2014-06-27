@@ -14,6 +14,11 @@ set cpo&vim
 " Match Xcode default indentation settings
 set et sw=4 ts=4
 
+" Disable 'showmatch', it doesn't play well with \() interpolation.
+" Assume matchparen is loaded and use that instead
+set noshowmatch
+DoMatchParen
+
 " Define a trivial :SwiftRun command
 " This may want to be expanded later
 command! -nargs=* -buffer -bang -bar SwiftRun call swift#Run(<bang>0, [<f-args>])
