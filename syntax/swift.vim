@@ -95,6 +95,12 @@ syn region swiftClosureSimple start='[^}[:space:]]' end='\ze}' transparent conta
 syn region swiftClosureCaptureList start="\[" end="\]" contained contains=TOP,@swiftDefs nextgroup=swiftClosureSimple skipwhite skipempty
 syn match swiftClosureCaptureListOwnership /\<\%(strong\>\|weak\>\|unowned\%((safe)\|(unsafe)\|\>\)\)/ contained containedin=swiftClosureCaptureList
 
+syn match swiftAttribute /@\i\+/ nextgroup=swiftAttributeArguments skipwhite skipempty
+syn region swiftAttributeArguments matchgroup=swiftAttributeArguments start="(" end=")" contains=swiftAttributeArgumentsNest,swiftIdentifier,swiftKeyword,@swiftLiteral,swiftOperator contained
+syn region swiftAttributeArgumentsNest matchgroup=swiftAttributeArguments start="(" end=")" transparent contained
+syn region swiftAttributeArgumentsNest matchgroup=swiftAttributeArguments start="\[" end="\]" transparent contained
+syn region swiftAttributeArgumentsNest matchgroup=swiftAttributeArguments start="{" end="}" transparent contained
+
 " Definitions {{{2
 
 syn match swiftTypeDef /\<\%(class\|struct\|enum\|protocol\)\>[^{]*\ze{/ contains=TOP,@swiftDefs nextgroup=swiftTypeBody
@@ -147,6 +153,9 @@ hi def link swiftOperatorPrecedence swiftKeyword
 hi def link swiftOperatorPrecedenceLevel swiftInteger
 hi def link swiftOperatorAssociativity swiftKeyword
 hi def link swiftOperatorAssociativityValue swiftKeyword
+
+hi def link swiftAttribute          Macro
+hi def link swiftAttributeArguments Macro
 
 hi def link swiftVarAttribute swiftKeyword
 
