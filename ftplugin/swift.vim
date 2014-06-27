@@ -11,6 +11,9 @@ let b:did_ftplugin = 1
 let s:save_cpo = &cpo
 set cpo&vim
 
+" Match Xcode default indentation settings
+set et sw=4 ts=4
+
 " Define a trivial :SwiftRun command
 " This may want to be expanded later
 command! -nargs=* -buffer -bang -bar SwiftRun call swift#Run(<bang>0, [<f-args>])
