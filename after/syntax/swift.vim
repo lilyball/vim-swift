@@ -7,9 +7,9 @@ if exists('g:swift_no_conceal') || !has('conceal') || &enc != 'utf-8'
     finish
 endif
 
-syn match swiftOperatorArrowHead contained '>' conceal cchar= 
-syn match swiftOperatorArrowTail contained '-' conceal cchar=⟶
-syn match swiftOperatorArrow '->\%([-/=+!*%<>&|^~.]\)\@!' contains=swiftOperatorArrowHead,swiftOperatorArrowTail
+syn match swiftOperatorArrowHead contained '>' transparent contains=NONE conceal cchar= 
+syn match swiftOperatorArrowTail contained '-' transparent contains=NONE conceal cchar=⟶
+syn match swiftOperatorArrow '->\%([-/=+!*%<>&|^~.]\)\@!' contains=swiftOperatorArrowHead,swiftOperatorArrowTail transparent
 
 syn match swiftIdentPrime /\i\@<=__*\>/me=s+1 conceal cchar=′
 

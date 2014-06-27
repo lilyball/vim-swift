@@ -77,18 +77,13 @@ syn region swiftInterpolation matchgroup=swiftInterpolationDelim start=/\\(/ end
 
 " Operators {{{2
 
-syn match swiftOperator display ,\%(//\|/\*\)\@![-/=+!*%<>&|^~.]\+,
+syn match swiftOperator display ,\%(//\|/\*\)\@![-/=+!*%<>&|^~.]\+, transparent contains=NONE
 
 " Comments {{{2
 
 syn region swiftCommentLine excludenl start="//" end="$" contains=@Spell oneline
-syn region swiftCommentBlock matchgroup=swiftCommentBlock start="/\*" end="\*/" contains=swiftCommentBlockNest,@Spell
-syn region swiftCommentBlockNest matchgroup=swiftCommentBlock start="/\*" end="\*/" contained contains=swiftCommentBlockNest,@Spell
-" FIXME: Note, nested block comments don't work right with /* */*
-" This is because vim will prioritize the comment start even though the
-" comment end occurs first. I am unaware of any way to fix this.
-" NB: don't try and use \*\@<! at the start of the block comment, that causes
-" even more troubles, e.g. with /*/**/*/
+syn region swiftCommentBlock matchgroup=swiftCommentBlockDelim start="/\*" end="\*/" contains=swiftCommentBlockNest,@Spell
+syn region swiftCommentBlockNest matchgroup=swiftCommentBlockDelim start="/\*" end="\*/" contains=swiftCommentBlockNest,@Spell contained transparent
 
 " Default highlighting {{{1
 
@@ -105,6 +100,7 @@ hi def link swiftInterpolationDelim Delimiter
 
 hi def link swiftCommentLine  Comment
 hi def link swiftCommentBlock swiftCommentLine
+hi def link swiftCommentBlockDelim swiftCommentBlock
 
 " }}}1
 
