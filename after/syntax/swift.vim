@@ -11,7 +11,7 @@ syn match swiftOperatorArrowHead contained '>' transparent contains=NONE conceal
 syn match swiftOperatorArrowTail contained '-' transparent contains=NONE conceal cchar=⟶
 syn match swiftOperatorArrow '->\%([-/=+!*%<>&|^~.]\)\@!' contains=swiftOperatorArrowHead,swiftOperatorArrowTail transparent
 
-syn match swiftIdentPrime /\i\@<=__*\>/me=s+1 conceal cchar=′
+syn match swiftIdentPrime /\i\@<=__*\>/me=s+1 conceal cchar=′ containedin=swiftIdentifier transparent contains=NONE
 
 setl conceallevel=2
 

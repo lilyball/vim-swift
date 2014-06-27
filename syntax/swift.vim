@@ -21,21 +21,29 @@ let &l:iskeyword = '@,' " isalpha(), should cover [a-zA-Z]
             \ . '188-190,192-214,216-246,248-255'
 let &l:isident = &l:iskeyword
 
+set foldmethod=syntax
+set foldlevel=999
+
 " Syntax definitions {{{1
+
+" Identifiers {{{2
+
+syn match swiftIdentifier /\<\i\+\>/ display transparent contains=NONE
 
 " Keywords {{{2
 
-syn keyword swiftKeyword class deinit enum extension func import init let
-syn keyword swiftKeyword protocol static struct subscript typealias var
+" Keywords have priority over other matches, so use syn-match for the few
+" keywords that we want to reuse in other matches.
+syn match swiftKeyword /\<\%(class\|struct\|enum\|protocol\|var\)\>/
+syn keyword swiftKeyword deinit extension func import init let
+syn keyword swiftKeyword static subscript typealias
 syn keyword swiftKeyword break case continue default do else fallthrough if in
 syn keyword swiftKeyword for return switch where while
 syn keyword swiftKeyword as dynamicType is new super self Self Type
 syn keyword swiftKeyword __COLUMN__ __FILE__ __FUNCTION__ __LINE__
 
 " context-sensitive keywords:
-" associativity, didSet, get, infix, inout, left, mutating, none,
-" nonmutating, operator, override, postfix, precedence, prefix, right, set,
-" unowned, unowned(safe), unowned(unsafe), weak, willSet
+" inout, mutating, nonmutating, override
 
 " Built-in types {{{2
 " This is just the types that represent primitives or other commonly-used
@@ -59,6 +67,7 @@ syn match swiftInteger display /\<\d[0-9_]*/
 syn match swiftInteger display /\<0b[01][01_]*/
 syn match swiftInteger display /\<0o\o[0-7_]*/
 syn match swiftInteger display /\<0x\x[0-9a-fA-F_]*/
+syn cluster swiftLiteral add=swiftInteger
 
 " Float and hex float literals {{{3
 " NB: Swift's documentation allows a decimal integer literal to also match a
@@ -66,18 +75,51 @@ syn match swiftInteger display /\<0x\x[0-9a-fA-F_]*/
 syn match swiftFloat display /\<\d[0-9_]*\.\d[0-9_]*\%([eE][-+]\?\d[0-9_]*\)\?\>/
 syn match swiftFloat display /\<\d[0-9_]*\%(\.\d[0-9_]*\)\?[eE][-+]\?\d[0-9_]*\>/
 syn match swiftFloat display /\<0x\x[0-9a-fA-F_]*\%(\.\x[0-9a-fA-F_]*\)\?[pP][-+]\?\d[0-9_]*\>/
+syn cluster swiftLiteral add=swiftFloat
 
 " String literals {{{3
 
 syn region swiftString start=/"/ end=/"/ keepend oneline contains=swiftStringEscape,swiftStringEscapeError,swiftInterpolation,@Spell
 syn match swiftStringEscapeError display contained /\\./
 syn match swiftStringEscape display contained /\\\%([0\\tnr"']\|x\x\{2}\|u\x\{4}\|U\x\{8}\)/ extend
+syn cluster swiftLiteral add=swiftString
 
 syn region swiftInterpolation matchgroup=swiftInterpolationDelim start=/\\(/ end=/)/ contained oneline contains=TOP
 
-" Operators {{{2
+" Miscellaneous {{{2
 
 syn match swiftOperator display ,\%(//\|/\*\)\@![-/=+!*%<>&|^~.]\+, transparent contains=NONE
+
+syn region swiftClosure matchgroup=swiftClosure start="{" end="}" contains=swiftClosureCaptureList,swiftClosureSimple fold
+syn region swiftClosureSimple start='[^}[:space:]]' end='\ze}' transparent contained contains=TOP,@swiftDefs
+syn region swiftClosureCaptureList start="\[" end="\]" contained contains=TOP,@swiftDefs nextgroup=swiftClosureSimple skipwhite skipempty
+syn match swiftClosureCaptureListOwnership /\<\%(strong\>\|weak\>\|unowned\%((safe)\|(unsafe)\|\>\)\)/ contained containedin=swiftClosureCaptureList
+
+" Definitions {{{2
+
+syn match swiftTypeDef /\<\%(class\|struct\|enum\|protocol\)\>[^{]*\ze{/ contains=TOP,@swiftDefs nextgroup=swiftTypeBody
+syn region swiftTypeBody matchgroup=swiftTypeBody start="{" end="}" contained contains=TOP fold
+syn cluster swiftDefs add=swiftTypeDef
+
+syn region swiftOperatorDef start=/\<operator\_s\+\%(prefix\|postfix\)\>/ end="\ze{" contains=swiftOperatorDefKeywords,swiftOperator nextgroup=swiftOperatorEmptyBody
+syn region swiftOperatorDef start="\<operator\_s\+infix\>" end="\ze{"  contains=swiftOperatorDefKeywords,swiftOperator nextgroup=swiftOperatorInfixBody
+syn region swiftOperatorEmptyBody start="{" end="}" contained
+syn region swiftOperatorInfixBody start="{" end="}" contained contains=swiftOperatorPrecedence,swiftOperatorAssociativity fold
+syn match swiftOperatorDefKeywords /\<\%(operator\|prefix\|postfix\|infix\)\>/ contained
+syn keyword swiftOperatorPrecedence contained nextgroup=swiftOperatorPrecedenceLevel skipwhite skipempty precedence
+syn match swiftOperatorPrecedenceLevel contained /\d\+/
+syn keyword swiftOperatorAssociativity contained nextgroup=swiftOperatorAssociativityValue skipwhite skipempty associativity
+syn keyword swiftOperatorAssociativityValue contained left right none
+syn cluster swiftDefs add=swiftOperatorDef
+
+" Variables {{{2
+
+syn match swiftVarDef /\<var\>[^{]*\ze{/ contains=TOP,swiftVarDef,@swiftDefs nextgroup=swiftVarBody
+syn region swiftVarBody matchgroup=swiftVarBody start="{" end="}" fold contained contains=TOP,@swiftDefs,swiftVarBody
+syn keyword swiftVarAttribute contained containedin=swiftVarBody nextgroup=swiftVarAttributeBlock skipwhite skipempty get
+syn match swiftVarAttribute /\<\%(set\|willSet\|didSet\)\>/ contained containedin=swiftVarBody nextgroup=swiftVarAttributeArg,swiftVarAttributeBlock skipwhite skipempty
+syn region swiftVarAttributeArg start="(" end=")" contained contains=swiftKeyword,@swiftLiteral,swiftIdentifier nextgroup=swiftVarAttributeBlock skipwhite skipempty
+syn region swiftVarAttributeBlock matchgroup=swiftVarAttributeBlock start="{" end="}" contained contains=TOP,@swiftDefs fold
 
 " Comments {{{2
 
@@ -97,6 +139,16 @@ hi def link swiftString String
 hi def link swiftStringEscapeError Error
 hi def link swiftStringEscape Special
 hi def link swiftInterpolationDelim Delimiter
+
+hi def link swiftClosureCaptureListOwnership swiftKeyword
+
+hi def link swiftOperatorDefKeywords swiftKeyword
+hi def link swiftOperatorPrecedence swiftKeyword
+hi def link swiftOperatorPrecedenceLevel swiftInteger
+hi def link swiftOperatorAssociativity swiftKeyword
+hi def link swiftOperatorAssociativityValue swiftKeyword
+
+hi def link swiftVarAttribute swiftKeyword
 
 hi def link swiftCommentLine  Comment
 hi def link swiftCommentBlock swiftCommentLine
