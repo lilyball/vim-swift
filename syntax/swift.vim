@@ -70,7 +70,6 @@ syn match swiftInteger display /\<\d[0-9_]*/
 syn match swiftInteger display /\<0b[01][01_]*/
 syn match swiftInteger display /\<0o\o[0-7_]*/
 syn match swiftInteger display /\<0x\x[0-9a-fA-F_]*/
-syn cluster swiftLiteral add=swiftInteger
 
 " Float and hex float literals {{{3
 " NB: Swift's documentation allows a decimal integer literal to also match a
@@ -78,16 +77,18 @@ syn cluster swiftLiteral add=swiftInteger
 syn match swiftFloat display /\<\d[0-9_]*\.\d[0-9_]*\%([eE][-+]\?\d[0-9_]*\)\?\>/
 syn match swiftFloat display /\<\d[0-9_]*\%(\.\d[0-9_]*\)\?[eE][-+]\?\d[0-9_]*\>/
 syn match swiftFloat display /\<0x\x[0-9a-fA-F_]*\%(\.\x[0-9a-fA-F_]*\)\?[pP][-+]\?\d[0-9_]*\>/
-syn cluster swiftLiteral add=swiftFloat
 
 " String literals {{{3
 
 syn region swiftString start=/"/ end=/"/ keepend oneline contains=swiftStringEscape,swiftStringEscapeError,swiftInterpolation,@Spell
 syn match swiftStringEscapeError display contained /\\./
 syn match swiftStringEscape display contained /\\\%([0\\tnr"']\|x\x\{2}\|u\x\{4}\|U\x\{8}\)/ extend
-syn cluster swiftLiteral add=swiftString
 
 syn region swiftInterpolation matchgroup=swiftInterpolationDelim start=/\\(/ end=/)/ contained oneline contains=TOP
+
+" Boolean literals {{{3
+
+syn keyword swiftBoolean true false
 
 " Miscellaneous {{{2
 
@@ -101,10 +102,12 @@ syn region swiftClosureCaptureList start="\[" end="\]" contained contains=TOP,@s
 syn match swiftClosureCaptureListOwnership /\<\%(strong\>\|weak\>\|unowned\%((safe)\|(unsafe)\|\>\)\)/ contained containedin=swiftClosureCaptureList
 
 syn match swiftAttribute /@\i\+/ nextgroup=swiftAttributeArguments skipwhite skipempty
-syn region swiftAttributeArguments matchgroup=swiftAttributeArguments start="(" end=")" contains=swiftAttributeArgumentsNest,swiftIdentifier,swiftKeyword,@swiftLiteral,swiftOperator contained
-syn region swiftAttributeArgumentsNest matchgroup=swiftAttributeArguments start="(" end=")" transparent contained
-syn region swiftAttributeArgumentsNest matchgroup=swiftAttributeArguments start="\[" end="\]" transparent contained
-syn region swiftAttributeArgumentsNest matchgroup=swiftAttributeArguments start="{" end="}" transparent contained
+syn region swiftAttributeArguments matchgroup=swiftAttributeArguments start="(" end=")" contains=TOP,@swiftItems contained
+syn region swiftAttributeArgumentsNest matchgroup=swiftAttributeArguments start="(" end=")" transparent contained containedin=swiftAttributeArguments
+syn region swiftAttributeArgumentsNest matchgroup=swiftAttributeArguments start="\[" end="\]" transparent contained containedin=swiftAttributeArguments
+
+syn region swiftAttributeArgumentsNest matchgroup=swiftAttributeArguments start="{" end="}" transparent contained containedin=swiftAttributeArguments
+
 
 " Definitions {{{2
 
@@ -132,7 +135,7 @@ syn match swiftFuncDef /\<func\>\_[^{]*\ze{/ contains=TOP,@swiftDefs,swiftFuncDe
 syn match swiftSpecialFuncDef /\<\%(init\|deinit\|subscript\)\>\_[^{]*\ze{/ contains=TOP,@swiftDefs,swiftFuncDef nextgroup=swiftFuncBody
 syn region swiftFuncBody matchgroup=swiftFuncBody start="{" end="}" contained contains=TOP,@swiftDefs fold
 syn region swiftFuncArgs matchgroup=swiftFuncArgs start="(" end=")" contained containedin=swiftFuncDef contains=TOP,@swiftItems transparent
-syn match swiftFuncArgInout /\<inout\>/ contained containedin=swiftFuncArgs
+syn keyword swiftFuncArgInout contained containedin=swiftFuncArgs inout
 syn cluster swiftItems add=swiftFuncDef
 syn cluster swiftDefs add=swiftSpecialFuncDef
 
@@ -142,7 +145,7 @@ syn match swiftVarDef /\<var\>[^{=]*\ze{/ contains=TOP,swiftVarDef,@swiftDefs ne
 syn region swiftVarBody matchgroup=swiftVarBody start="{" end="}" fold contained contains=TOP,@swiftDefs
 syn keyword swiftVarAttribute contained containedin=swiftVarBody nextgroup=swiftVarAttributeBlock skipwhite skipempty get
 syn match swiftVarAttribute /\<\%(set\|willSet\|didSet\)\>/ contained containedin=swiftVarBody nextgroup=swiftVarAttributeArg,swiftVarAttributeBlock skipwhite skipempty
-syn region swiftVarAttributeArg start="(" end=")" contained contains=swiftKeyword,@swiftLiteral,swiftIdentifier nextgroup=swiftVarAttributeBlock skipwhite skipempty
+syn region swiftVarAttributeArg start="(" end=")" contained contains=TOP,@swiftItems nextgroup=swiftVarAttributeBlock skipwhite skipempty
 syn region swiftVarAttributeBlock matchgroup=swiftVarAttributeBlock start="{" end="}" contained contains=TOP,@swiftDefs fold
 syn cluster swiftItems add=swiftVarDef
 
@@ -159,6 +162,7 @@ hi def link swiftType    Type
 
 hi def link swiftInteger  Number
 hi def link swiftFloat    Number
+hi def link swiftBoolean  Number
 
 hi def link swiftString String
 hi def link swiftStringEscapeError Error
