@@ -26,6 +26,11 @@ set foldlevel=999
 
 " Syntax definitions {{{1
 
+" @swiftDefs are definitions that cannot occur inside closures/functions
+syn cluster swiftDefs contains=NONE
+" @swiftItems are things that cannot be found in an expression
+syn cluster swiftItems contains=@swiftDefs
+
 " Identifiers {{{2
 
 syn match swiftIdentifier /\<\i\+\>/ display transparent contains=NONE
@@ -34,16 +39,14 @@ syn match swiftIdentifier /\<\i\+\>/ display transparent contains=NONE
 
 " Keywords have priority over other matches, so use syn-match for the few
 " keywords that we want to reuse in other matches.
-syn match swiftKeyword /\<\%(class\|struct\|enum\|protocol\|var\)\>/
-syn keyword swiftKeyword deinit extension func import init let
-syn keyword swiftKeyword static subscript typealias
+syn match swiftKeyword /\<\%(class\|struct\|enum\|protocol\|extension\)\>/
+syn match swiftKeyword /\<\%(var\|func\|subscript\|init\|deinit\)\>/
+syn keyword swiftKeyword import let
+syn keyword swiftKeyword static typealias
 syn keyword swiftKeyword break case continue default do else fallthrough if in
 syn keyword swiftKeyword for return switch where while
 syn keyword swiftKeyword as dynamicType is new super self Self Type
 syn keyword swiftKeyword __COLUMN__ __FILE__ __FUNCTION__ __LINE__
-
-" context-sensitive keywords:
-" inout, mutating, nonmutating, override
 
 " Built-in types {{{2
 " This is just the types that represent primitives or other commonly-used
@@ -90,6 +93,8 @@ syn region swiftInterpolation matchgroup=swiftInterpolationDelim start=/\\(/ end
 
 syn match swiftOperator display ,\%(//\|/\*\)\@![-/=+!*%<>&|^~.]\+, transparent contains=NONE
 
+syn region swiftBalancedParens matchgroup=swiftBalancedParens start="(" end=")" transparent contains=TOP,@swiftItems
+
 syn region swiftClosure matchgroup=swiftClosure start="{" end="}" contains=swiftClosureCaptureList,swiftClosureSimple fold
 syn region swiftClosureSimple start='[^}[:space:]]' end='\ze}' transparent contained contains=TOP,@swiftDefs
 syn region swiftClosureCaptureList start="\[" end="\]" contained contains=TOP,@swiftDefs nextgroup=swiftClosureSimple skipwhite skipempty
@@ -103,10 +108,13 @@ syn region swiftAttributeArgumentsNest matchgroup=swiftAttributeArguments start=
 
 " Definitions {{{2
 
-syn match swiftTypeDef /\<\%(class\|struct\|enum\|protocol\)\>[^{]*\ze{/ contains=TOP,@swiftDefs nextgroup=swiftTypeBody
+" Types (struct/class/etc) {{{3
+syn match swiftTypeDef /\<\%(class\|struct\|enum\|protocol\|extension\)\>\_[^{]*\ze{/ contains=TOP,@swiftItems nextgroup=swiftTypeBody
 syn region swiftTypeBody matchgroup=swiftTypeBody start="{" end="}" contained contains=TOP fold
+syn match swiftTypeBodyKeywords /\<\%(mutating\|nonmutating\|override\)\>/ contained containedin=swiftTypeBody
 syn cluster swiftDefs add=swiftTypeDef
 
+" Operators {{{3
 syn region swiftOperatorDef start=/\<operator\_s\+\%(prefix\|postfix\)\>/ end="\ze{" contains=swiftOperatorDefKeywords,swiftOperator nextgroup=swiftOperatorEmptyBody
 syn region swiftOperatorDef start="\<operator\_s\+infix\>" end="\ze{"  contains=swiftOperatorDefKeywords,swiftOperator nextgroup=swiftOperatorInfixBody
 syn region swiftOperatorEmptyBody start="{" end="}" contained
@@ -118,14 +126,25 @@ syn keyword swiftOperatorAssociativity contained nextgroup=swiftOperatorAssociat
 syn keyword swiftOperatorAssociativityValue contained left right none
 syn cluster swiftDefs add=swiftOperatorDef
 
-" Variables {{{2
+" Functions {{{3
 
-syn match swiftVarDef /\<var\>[^{]*\ze{/ contains=TOP,swiftVarDef,@swiftDefs nextgroup=swiftVarBody
-syn region swiftVarBody matchgroup=swiftVarBody start="{" end="}" fold contained contains=TOP,@swiftDefs,swiftVarBody
+syn match swiftFuncDef /\<func\>\_[^{]*\ze{/ contains=TOP,@swiftDefs,swiftFuncDef nextgroup=swiftFuncBody
+syn match swiftSpecialFuncDef /\<\%(init\|deinit\|subscript\)\>\_[^{]*\ze{/ contains=TOP,@swiftDefs,swiftFuncDef nextgroup=swiftFuncBody
+syn region swiftFuncBody matchgroup=swiftFuncBody start="{" end="}" contained contains=TOP,@swiftDefs fold
+syn region swiftFuncArgs matchgroup=swiftFuncArgs start="(" end=")" contained containedin=swiftFuncDef contains=TOP,@swiftItems transparent
+syn match swiftFuncArgInout /\<inout\>/ contained containedin=swiftFuncArgs
+syn cluster swiftItems add=swiftFuncDef
+syn cluster swiftDefs add=swiftSpecialFuncDef
+
+" Variables {{{3
+
+syn match swiftVarDef /\<var\>[^{=]*\ze{/ contains=TOP,swiftVarDef,@swiftDefs nextgroup=swiftVarBody
+syn region swiftVarBody matchgroup=swiftVarBody start="{" end="}" fold contained contains=TOP,@swiftDefs
 syn keyword swiftVarAttribute contained containedin=swiftVarBody nextgroup=swiftVarAttributeBlock skipwhite skipempty get
 syn match swiftVarAttribute /\<\%(set\|willSet\|didSet\)\>/ contained containedin=swiftVarBody nextgroup=swiftVarAttributeArg,swiftVarAttributeBlock skipwhite skipempty
 syn region swiftVarAttributeArg start="(" end=")" contained contains=swiftKeyword,@swiftLiteral,swiftIdentifier nextgroup=swiftVarAttributeBlock skipwhite skipempty
 syn region swiftVarAttributeBlock matchgroup=swiftVarAttributeBlock start="{" end="}" contained contains=TOP,@swiftDefs fold
+syn cluster swiftItems add=swiftVarDef
 
 " Comments {{{2
 
@@ -148,14 +167,18 @@ hi def link swiftInterpolationDelim Delimiter
 
 hi def link swiftClosureCaptureListOwnership swiftKeyword
 
+hi def link swiftAttribute          Macro
+hi def link swiftAttributeArguments Macro
+
+hi def link swiftTypeBodyKeywords swiftKeyword
+
 hi def link swiftOperatorDefKeywords swiftKeyword
 hi def link swiftOperatorPrecedence swiftKeyword
 hi def link swiftOperatorPrecedenceLevel swiftInteger
 hi def link swiftOperatorAssociativity swiftKeyword
 hi def link swiftOperatorAssociativityValue swiftKeyword
 
-hi def link swiftAttribute          Macro
-hi def link swiftAttributeArguments Macro
+hi def link swiftFuncArgInout swiftKeyword
 
 hi def link swiftVarAttribute swiftKeyword
 
