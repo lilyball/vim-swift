@@ -8,7 +8,7 @@ if exists("b:did_indent")
 endif
 let b:did_indent = 1
 
-setl cindent " use cindent for the time being, it should work reasonably
+setl autoindent smartindent nocindent
 
 let b:undo_indent = "setl cin<"
 
