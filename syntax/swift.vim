@@ -100,6 +100,7 @@ syn region swiftClosure matchgroup=swiftClosure start="{" end="}" contains=swift
 syn region swiftClosureSimple start='[^}[:space:]]' end='\ze}' transparent contained contains=TOP,@swiftDefs
 syn region swiftClosureCaptureList start="\[" end="\]" contained contains=TOP,@swiftDefs nextgroup=swiftClosureSimple skipwhite skipempty
 syn match swiftClosureCaptureListOwnership /\<\%(strong\>\|weak\>\|unowned\%((safe)\|(unsafe)\|\>\)\)/ contained containedin=swiftClosureCaptureList
+syn match swiftPlaceholder /\$\d\+/ contained containedin=swiftClosureSimple
 
 syn match swiftAttribute /@\i\+/ nextgroup=swiftAttributeArguments skipwhite skipempty
 syn region swiftAttributeArguments matchgroup=swiftAttributeArguments start="(" end=")" contains=TOP,@swiftItems contained
@@ -170,6 +171,7 @@ hi def link swiftStringEscape Special
 hi def link swiftInterpolationDelim Delimiter
 
 hi def link swiftClosureCaptureListOwnership swiftKeyword
+hi def link swiftPlaceholder Identifier
 
 hi def link swiftAttribute          Macro
 hi def link swiftAttributeArguments Macro
