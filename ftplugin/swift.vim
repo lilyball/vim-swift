@@ -15,9 +15,13 @@ set cpo&vim
 set et sw=4 ts=4
 
 " Disable 'showmatch', it doesn't play well with \() interpolation.
-" Assume matchparen is loaded and use that instead
+" Use matchparen instead
 set noshowmatch
-DoMatchParen
+if exists(':DoMatchParen')
+    DoMatchParen
+else
+    echoerr "Swift ftplugin wants matchparen, which is not loaded"
+endif
 
 " Define a trivial :SwiftRun command
 " This may want to be expanded later
