@@ -39,6 +39,22 @@ nnoremap <buffer> <silent> <D-r> :SwiftRun<CR>
 
 " Miscellaneous {{{1
 
+" Add support to NERDCommenter
+if !exists('g:swift_setup_NERDCommenter')
+    let g:swift_setup_NERDCommenter = 1
+
+    let s:delimiter_map = { 'swift': { 'left': '//', 'leftAlt': '/*', 'rightAlt': '*/' } }
+
+    if exists('g:NERDDelimiterMap')
+        call extend(g:NERDDelimiterMap, s:delimiter_map)
+    elseif exists('g:NERDCustomDelimiters')
+        call extend(g:NERDCustomDelimiters, s:delimiter_map)
+    else
+        let g:NERDCustomDelimiters = s:delimiter_map
+    endif
+    unlet s:delimiter_map
+endif
+
 " Check for 'showmatch' because it doesn't work right with \()
 if &showmatch
     echohl WarningMsg
