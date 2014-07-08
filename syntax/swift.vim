@@ -47,6 +47,7 @@ syn keyword swiftKeyword break case continue default do else fallthrough if in
 syn keyword swiftKeyword for return switch where while
 syn keyword swiftKeyword as dynamicType is new super self Self Type
 syn keyword swiftKeyword __COLUMN__ __FILE__ __FUNCTION__ __LINE__
+syn keyword swiftKeyword nil
 
 " Built-in types {{{2
 " This is just the types that represent primitives or other commonly-used
