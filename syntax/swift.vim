@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:    Swift
 " Maintainer:  Kevin Ballard
-" Last Change: June 05, 2014
+" Last Change: Jul 07, 2014
 
 if exists("b:current_syntax")
     finish
@@ -155,7 +155,10 @@ syn cluster swiftItems add=swiftVarDef
 
 syn region swiftCommentLine excludenl start="//" end="$" contains=@Spell oneline
 syn region swiftCommentBlock matchgroup=swiftCommentBlockDelim start="/\*" end="\*/" contains=swiftCommentBlockNest,@Spell
-syn region swiftCommentBlockNest matchgroup=swiftCommentBlockDelim start="/\*" end="\*/" contains=swiftCommentBlockNest,@Spell contained transparent
+syn region swiftCommentBlockNest matchgroup=swiftCommentBlockDelim start="/\*" end="\*/" contains=swiftCommentBlockNest,@Spell contained
+
+syn region swiftDocCommentLine excludenl start="///" end="$" contains=@Spell oneline
+syn region swiftDocCommentBlock matchgroup=swiftDocCommentBlockDelim start="/\*\*" end="\*/" contains=swiftCommentBlockNest,@Spell
 
 " Default highlighting {{{1
 
@@ -192,6 +195,11 @@ hi def link swiftVarAttribute swiftKeyword
 hi def link swiftCommentLine  Comment
 hi def link swiftCommentBlock swiftCommentLine
 hi def link swiftCommentBlockDelim swiftCommentBlock
+hi def link swiftCommentBlockNest swiftCommentBlock
+
+hi def link swiftDocCommentLine SpecialComment
+hi def link swiftDocCommentBlock swiftDocCommentLine
+hi def link swiftDocCommentBlockDelim swiftDocCommentBlock
 
 " }}}1
 

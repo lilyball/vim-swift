@@ -10,6 +10,8 @@ let b:did_indent = 1
 
 setl autoindent smartindent nocindent
 
-let b:undo_indent = "setl cin<"
+let b:undo_indent = "
+            \ setlocal autoindent< smartindent< cindent<
+            \"
 
 " vim: set et sw=4 ts=4:
