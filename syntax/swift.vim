@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:    Swift
 " Maintainer:  Kevin Ballard
-" Last Change: Jul 07, 2014
+" Last Change: Jul 25, 2014
 
 if exists("b:current_syntax")
     finish
@@ -42,12 +42,15 @@ syn match swiftIdentifier /\<\i\+\>/ display transparent contains=NONE
 syn match swiftKeyword /\<\%(class\|struct\|enum\|protocol\|extension\)\>/
 syn match swiftKeyword /\<\%(var\|func\|subscript\|init\|deinit\)\>/
 syn keyword swiftKeyword import let
+syn keyword swiftKeyword internal public private
 syn keyword swiftKeyword static typealias
 syn keyword swiftKeyword break case continue default do else fallthrough if in
 syn keyword swiftKeyword for return switch where while
-syn keyword swiftKeyword as dynamicType is new super self Self Type
+syn keyword swiftKeyword as dynamicType is super self Self
 syn keyword swiftKeyword __COLUMN__ __FILE__ __FUNCTION__ __LINE__
-syn keyword swiftKeyword nil
+
+" undocumented keywords
+syn keyword swiftKeyword new dynamic
 
 " Built-in types {{{2
 " This is just the types that represent primitives or other commonly-used
@@ -90,6 +93,10 @@ syn region swiftInterpolation matchgroup=swiftInterpolationDelim start=/\\(/ end
 " Boolean literals {{{3
 
 syn keyword swiftBoolean true false
+
+" Nil literal {{{3
+
+syn keyword swiftNil nil
 
 " Miscellaneous {{{2
 
@@ -168,6 +175,7 @@ hi def link swiftType    Type
 hi def link swiftInteger  Number
 hi def link swiftFloat    Number
 hi def link swiftBoolean  Number
+hi def link swiftNil      swiftKeyword
 
 hi def link swiftString String
 hi def link swiftStringEscapeError Error
