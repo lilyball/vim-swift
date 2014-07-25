@@ -102,7 +102,10 @@ syn match swiftFloat display /\<0x\x[0-9a-fA-F_]*\%(\.\x[0-9a-fA-F_]*\)\?[pP][-+
 
 syn region swiftString start=/"/ end=/"/ end=/$/ keepend oneline contains=swiftStringEscape,swiftStringEscapeError,swiftInterpolation,@Spell
 syn match swiftStringEscapeError display contained /\\./
-syn match swiftStringEscape display contained /\\\%([0\\tnr"']\|x\x\{2}\|u\x\{4}\|U\x\{8}\)/ extend
+syn match swiftStringEscape contained /\\[0\\tnr"']/ extend
+syn match swiftStringEscapeError display contained /\\\%(x\x\{,2}\|u\x\{,4}\|U\x\{,8}\)/
+syn region swiftStringEscape matchgroup=swiftStringEscapeUnicode start="\\u{" end=/}\|\ze"/ display contained contains=swiftStringEscapeUnicodeError keepend
+syn region swiftStringEscapeUnicodeError start=/\_X\|{\@1<=\x\{8}\zs\_[^}]/ end=/}/ display contained
 
 syn region swiftInterpolation matchgroup=swiftInterpolationDelim start=/\\(/ end=/)/ contained oneline contains=TOP
 
@@ -199,6 +202,8 @@ hi def link swiftNil      swiftKeyword
 hi def link swiftString String
 hi def link swiftStringEscapeError Error
 hi def link swiftStringEscape Special
+hi def link swiftStringEscapeUnicode swiftStringEscape
+hi def link swiftStringEscapeUnicodeError swiftStringEscapeError
 hi def link swiftInterpolationDelim Delimiter
 
 hi def link swiftClosureCaptureListOwnership swiftKeyword
