@@ -37,19 +37,35 @@ syn match swiftIdentifier /\<\i\+\>/ display transparent contains=NONE
 
 " Keywords {{{2
 
+" Declarations {{{3
+
 " Keywords have priority over other matches, so use syn-match for the few
 " keywords that we want to reuse in other matches.
 syn match swiftKeyword /\<\%(class\|struct\|enum\|protocol\|extension\)\>/
 syn match swiftKeyword /\<\%(var\|func\|subscript\|init\|deinit\)\>/
-syn keyword swiftKeyword import let
+
+" Access control {{{3
+
+" Define the keywords once because they're keywords, and again for @swiftItems
+" to support the (set) modifier.
+
 syn keyword swiftKeyword internal public private
+
+syn keyword swiftAccessControl internal public private nextgroup=swiftAccessControlScope skipwhite skipempty
+syn match swiftAccessControlScope /(\_s*set\_s*)\ze\_s*var\>/ contained nextgroup=swiftVarDef skipwhite skipempty
+syn cluster swiftItems add=swiftAccessControl
+
+" Other keywords {{{3
+
+syn keyword swiftKeyword import let
 syn keyword swiftKeyword static typealias
 syn keyword swiftKeyword break case continue default do else fallthrough if in
 syn keyword swiftKeyword for return switch where while
 syn keyword swiftKeyword as dynamicType is super self Self
 syn keyword swiftKeyword __COLUMN__ __FILE__ __FUNCTION__ __LINE__
 
-" undocumented keywords
+" Undocumented keywords {{{3
+
 syn keyword swiftKeyword new dynamic
 
 " Built-in types {{{2
@@ -171,6 +187,9 @@ syn region swiftDocCommentBlock matchgroup=swiftDocCommentBlockDelim start="/\*\
 
 hi def link swiftKeyword Keyword
 hi def link swiftType    Type
+
+hi def link swiftAccessControl      Keyword
+hi def link swiftAccessControlScope swiftAccessControl
 
 hi def link swiftInteger  Number
 hi def link swiftFloat    Number
