@@ -52,7 +52,7 @@ syn match swiftKeyword /\<\%(var\|func\|subscript\|init\|deinit\)\>/
 syn keyword swiftKeyword internal public private
 
 syn keyword swiftAccessControl internal public private nextgroup=swiftAccessControlScope skipwhite skipempty
-syn match swiftAccessControlScope /(\_s*set\_s*)\ze\_s*var\>/ contained nextgroup=swiftVarDef skipwhite skipempty
+syn match swiftAccessControlScope /(\_s*set\_s*)\ze\%(\_s*\%(public\|private\|internal\)\%(\_s*(\_[^)]*)\)\=\)*\_s*\<var\>/ contained nextgroup=swiftVarDef,swiftAccessControlScope skipwhite skipempty
 syn cluster swiftItems add=swiftAccessControl
 
 " Other keywords {{{3
