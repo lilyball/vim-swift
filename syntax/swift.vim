@@ -136,8 +136,7 @@ syn region swiftAttributeArgumentsNest matchgroup=swiftAttributeArguments start=
 
 syn region swiftAttributeArgumentsNest matchgroup=swiftAttributeArguments start="{" end="}" transparent contained containedin=swiftAttributeArguments
 
-
-" Definitions {{{2
+" Declarations {{{2
 
 " Types (struct/class/etc) {{{3
 syn match swiftTypeDef /\<\%(class\|struct\|enum\|protocol\|extension\)\>\_[^{]*\ze{/ contains=TOP,@swiftItems nextgroup=swiftTypeBody
@@ -176,6 +175,11 @@ syn match swiftVarAttribute /\<\%(set\|willSet\|didSet\)\>/ contained containedi
 syn region swiftVarAttributeArg start="(" end=")" contained contains=TOP,@swiftItems nextgroup=swiftVarAttributeBlock skipwhite skipempty
 syn region swiftVarAttributeBlock matchgroup=swiftVarAttributeBlock start="{" end="}" contained contains=TOP,@swiftDefs fold
 syn cluster swiftItems add=swiftVarDef
+
+" Modifiers {{{3
+
+syn match swiftDeclarationModifier /\<\%(final\|lazy\|optional\|required\|convenience\|weak\|mutating\|nonmutating\)\>\ze\_s*\%(\%(final\|lazy\|optional\|required\|convenience\|weak\|mutating\|nonmutating\)\_s*\)*\<\%(class\|struct\|enum\|protocol\|extension\|var\|func\|subscript\|init\|deinit\)\>/
+syn cluster swiftItems add=swiftDeclarationModifier
 
 " Comments {{{2
 
@@ -223,6 +227,8 @@ hi def link swiftOperatorAssociativityValue swiftKeyword
 hi def link swiftFuncArgInout swiftKeyword
 
 hi def link swiftVarAttribute swiftKeyword
+
+hi def link swiftDeclarationModifier swiftKeyword
 
 hi def link swiftCommentLine  Comment
 hi def link swiftCommentBlock swiftCommentLine
