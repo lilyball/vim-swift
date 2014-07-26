@@ -38,5 +38,11 @@ MAPPINGS                                                      *swift-mappings*
 <D-r>			Executes |:SwiftRun| with no arguments.
 			Note: This binding is only available in MacVim.
 
+							*swift_<D-R>*
+<D-R>			Populates the command line with |:SwiftRun|! using the
+			arguments given to the last invocation, but does not
+			execute it.
+			Note: This binding is only available in MacVim.
+
 ==============================================================================
  vim:tw=78:sw=4:noet:ts=8:ft=help:norl:

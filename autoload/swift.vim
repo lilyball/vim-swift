@@ -1,27 +1,27 @@
 " File: autoload/swift.vim
 " Author: Kevin Ballard
 " Description: Helper functions for Swift
-" Last Change: June 23, 2014
+" Last Change: Jul 25, 2014
 
 " Run {{{1
 
 function! swift#Run(bang, args)
+	let args = s:ShellTokenize(a:args)
 	if a:bang
-		let idx = index(a:args, '--')
+		let idx = index(l:args, '--')
 		if idx != -1
-			let swift_args = idx == 0 ? [] : a:args[:idx-1]
-			let args = a:args[idx+1:]
+			let swift_args = idx == 0 ? [] : l:args[:idx-1]
+			let args = l:args[idx+1:]
 		else
-			let swift_args = a:args
+			let swift_args = l:args
 			let args = []
 		endif
 	else
 		let swift_args = []
-		let args = a:args
 	endif
 
-	let b:swift_last_swift_args = swift_args
-	let b:swift_last_args = args
+	let b:swift_last_swift_args = l:swift_args
+	let b:swift_last_args = l:args
 
 	call s:WithPath(function("s:Run"), swift_args, args)
 endfunction
@@ -38,14 +38,14 @@ function! s:Run(path, swift_args, args)
 
 		let swift = 'xcrun swift'
 
-		let output = system(swift . " " . join(map(swift_args, 'shellescape(v:val)')))
+		let output = system(swift . " " . join(swift_args))
 		if output != ''
 			echohl WarningMsg
 			echo output
 			echohl None
 		endif
 		if !v:shell_error
-			exe '!' . shellescape(exepath) . " " . join(map(a:args, 'shellescape(v:val)'))
+			exe '!' . shellescape(exepath) . " " . join(a:args)
 		endif
 	finally
 		if exists("exepath")
@@ -91,6 +91,29 @@ function! s:WithPath(func, ...)
 		if exists("save_cwd")   | silent exe 'lcd' save_cwd    | endif
 		if exists("tmpdir")     | silent call s:RmDir(tmpdir)  | endif
 	endtry
+endfunction
+
+function! swift#AppendCmdLine(text)
+	call setcmdpos(getcmdpos())
+	let cmd = getcmdline() . a:text
+	return cmd
+endfunction
+
+" Tokenize the String according to shell parsing rules
+function! s:ShellTokenize(text)
+	let pat = '\%([^ \t\n''"]\+\|\\.\|''[^'']*\%(''\|$\)\|"\%(\\.\|[^"]\)*\%("\|$\)\)\+'
+	let start = 0
+	let tokens = []
+	while 1
+		let pos = match(a:text, pat, start)
+		if l:pos == -1
+			break
+		endif
+		let end = matchend(a:text, pat, start)
+		call add(tokens, strpart(a:text, pos, end-pos))
+		let start = l:end
+	endwhile
+	return l:tokens
 endfunction
 
 function! s:RmDir(path)

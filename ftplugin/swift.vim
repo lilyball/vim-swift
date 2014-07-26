@@ -1,7 +1,7 @@
 " File: ftplugin/swift.vim
 " Author: Kevin Ballard
 " Description: Filetype plugin for Swift
-" Last Change: Jul 07, 2014
+" Last Change: Jul 25, 2014
 
 if exists("b:did_ftplugin")
     finish
@@ -28,14 +28,21 @@ setlocal commentstring=//%s
 
 " Commands {{{1
 
-" Define a trivial :SwiftRun command
-" This may want to be expanded later
-command! -nargs=* -buffer -bang -bar SwiftRun call swift#Run(<bang>0, [<f-args>])
+" See |:SwiftRun| for docs
+command! -nargs=* -complete=file -buffer -bang SwiftRun call swift#Run(<bang>0, <q-args>)
 
 " Mappings {{{1
 
-" Map ⌘R to :SwiftRun in MacVim
+" Map ⌘R in MacVim to :SwiftRun
 nnoremap <buffer> <silent> <D-r> :SwiftRun<CR>
+
+" Map ⌘⇧R in MacVim to :SwiftRun! pre-filled with the last args
+nnoremap <buffer> <D-R> :SwiftRun! <C-r>=join(b:swift_last_swift_args)<CR><C-\>eswift#AppendCmdLine(' -- ' . join(b:swift_last_args))<CR>
+
+if !exists("b:swift_last_swift_args") || !exists("b:swift_last_args")
+    let b:swift_last_swift_args = []
+    let b:swift_last_args = []
+endif
 
 " Miscellaneous {{{1
 
@@ -70,7 +77,9 @@ let b:undo_ftplugin = "
             \|setlocal formatoptions< suffixesadd< comments< commentstring<
             \|setlocal showmatch<
             \|delcommand SwiftRun
+            \|unlet! b:swift_last_swift_args b:swift_last_args
             \|nunmap <buffer> <D-r>
+            \|nunmap <buffer> <D-R>
             \|unlet! b:swift_last_args b:swift_last_swift_args
             \"
 
