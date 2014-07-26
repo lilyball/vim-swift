@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:    Swift
 " Maintainer:  Kevin Ballard
-" Last Change: Jul 07, 2014
+" Last Change: Jul 25, 2014
 
 if exists("b:current_syntax")
     finish
@@ -37,17 +37,36 @@ syn match swiftIdentifier /\<\i\+\>/ display transparent contains=NONE
 
 " Keywords {{{2
 
+" Declarations {{{3
+
 " Keywords have priority over other matches, so use syn-match for the few
 " keywords that we want to reuse in other matches.
 syn match swiftKeyword /\<\%(class\|struct\|enum\|protocol\|extension\)\>/
 syn match swiftKeyword /\<\%(var\|func\|subscript\|init\|deinit\)\>/
+
+" Access control {{{3
+
+" Define the keywords once because they're keywords, and again for @swiftItems
+" to support the (set) modifier.
+
+syn keyword swiftKeyword internal public private
+
+syn keyword swiftAccessControl internal public private nextgroup=swiftAccessControlScope skipwhite skipempty
+syn match swiftAccessControlScope /(\_s*set\_s*)\ze\%(\_s*\%(public\|private\|internal\)\%(\_s*(\_[^)]*)\)\=\)*\_s*\<var\>/ contained nextgroup=swiftVarDef,swiftAccessControlScope skipwhite skipempty
+syn cluster swiftItems add=swiftAccessControl
+
+" Other keywords {{{3
+
 syn keyword swiftKeyword import let
 syn keyword swiftKeyword static typealias
 syn keyword swiftKeyword break case continue default do else fallthrough if in
 syn keyword swiftKeyword for return switch where while
-syn keyword swiftKeyword as dynamicType is new super self Self Type
+syn keyword swiftKeyword as dynamicType is super self Self
 syn keyword swiftKeyword __COLUMN__ __FILE__ __FUNCTION__ __LINE__
-syn keyword swiftKeyword nil
+
+" Undocumented keywords {{{3
+
+syn keyword swiftKeyword new dynamic
 
 " Built-in types {{{2
 " This is just the types that represent primitives or other commonly-used
@@ -83,13 +102,20 @@ syn match swiftFloat display /\<0x\x[0-9a-fA-F_]*\%(\.\x[0-9a-fA-F_]*\)\?[pP][-+
 
 syn region swiftString start=/"/ end=/"/ end=/$/ keepend oneline contains=swiftStringEscape,swiftStringEscapeError,swiftInterpolation,@Spell
 syn match swiftStringEscapeError display contained /\\./
-syn match swiftStringEscape display contained /\\\%([0\\tnr"']\|x\x\{2}\|u\x\{4}\|U\x\{8}\)/ extend
+syn match swiftStringEscape contained /\\[0\\tnr"']/ extend
+syn match swiftStringEscapeError display contained /\\\%(x\x\{,2}\|u\x\{,4}\|U\x\{,8}\)/
+syn region swiftStringEscape matchgroup=swiftStringEscapeUnicode start="\\u{" end=/}\|\ze"/ display contained contains=swiftStringEscapeUnicodeError keepend
+syn region swiftStringEscapeUnicodeError start=/\_X\|{\@1<=\x\{8}\zs\_[^}]/ end=/}/ display contained
 
 syn region swiftInterpolation matchgroup=swiftInterpolationDelim start=/\\(/ end=/)/ contained oneline contains=TOP
 
 " Boolean literals {{{3
 
 syn keyword swiftBoolean true false
+
+" Nil literal {{{3
+
+syn keyword swiftNil nil
 
 " Miscellaneous {{{2
 
@@ -110,8 +136,7 @@ syn region swiftAttributeArgumentsNest matchgroup=swiftAttributeArguments start=
 
 syn region swiftAttributeArgumentsNest matchgroup=swiftAttributeArguments start="{" end="}" transparent contained containedin=swiftAttributeArguments
 
-
-" Definitions {{{2
+" Declarations {{{2
 
 " Types (struct/class/etc) {{{3
 syn match swiftTypeDef /\<\%(class\|struct\|enum\|protocol\|extension\)\>\_[^{]*\ze{/ contains=TOP,@swiftItems nextgroup=swiftTypeBody
@@ -151,6 +176,11 @@ syn region swiftVarAttributeArg start="(" end=")" contained contains=TOP,@swiftI
 syn region swiftVarAttributeBlock matchgroup=swiftVarAttributeBlock start="{" end="}" contained contains=TOP,@swiftDefs fold
 syn cluster swiftItems add=swiftVarDef
 
+" Modifiers {{{3
+
+syn match swiftDeclarationModifier /\<\%(final\|lazy\|optional\|required\|convenience\|weak\|mutating\|nonmutating\)\>\ze\_s*\%(\%(final\|lazy\|optional\|required\|convenience\|weak\|mutating\|nonmutating\)\_s*\)*\<\%(class\|struct\|enum\|protocol\|extension\|var\|func\|subscript\|init\|deinit\)\>/
+syn cluster swiftItems add=swiftDeclarationModifier
+
 " Comments {{{2
 
 syn region swiftCommentLine excludenl start="//" end="$" contains=@Spell oneline
@@ -165,13 +195,19 @@ syn region swiftDocCommentBlock matchgroup=swiftDocCommentBlockDelim start="/\*\
 hi def link swiftKeyword Keyword
 hi def link swiftType    Type
 
+hi def link swiftAccessControl      Keyword
+hi def link swiftAccessControlScope swiftAccessControl
+
 hi def link swiftInteger  Number
 hi def link swiftFloat    Number
 hi def link swiftBoolean  Number
+hi def link swiftNil      swiftKeyword
 
 hi def link swiftString String
 hi def link swiftStringEscapeError Error
 hi def link swiftStringEscape Special
+hi def link swiftStringEscapeUnicode swiftStringEscape
+hi def link swiftStringEscapeUnicodeError swiftStringEscapeError
 hi def link swiftInterpolationDelim Delimiter
 
 hi def link swiftClosureCaptureListOwnership swiftKeyword
@@ -191,6 +227,8 @@ hi def link swiftOperatorAssociativityValue swiftKeyword
 hi def link swiftFuncArgInout swiftKeyword
 
 hi def link swiftVarAttribute swiftKeyword
+
+hi def link swiftDeclarationModifier swiftKeyword
 
 hi def link swiftCommentLine  Comment
 hi def link swiftCommentBlock swiftCommentLine
