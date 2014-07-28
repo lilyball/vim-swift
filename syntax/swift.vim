@@ -183,12 +183,23 @@ syn cluster swiftItems add=swiftDeclarationModifier
 
 " Comments {{{2
 
-syn region swiftCommentLine excludenl start="//" end="$" contains=@Spell oneline
-syn region swiftCommentBlock matchgroup=swiftCommentBlockDelim start="/\*" end="\*/" contains=swiftCommentBlockNest,@Spell
-syn region swiftCommentBlockNest matchgroup=swiftCommentBlockDelim start="/\*" end="\*/" contains=swiftCommentBlockNest,@Spell contained
+syn region swiftCommentLine excludenl start="//" end="$" contains=@swiftCommentLineMarker,@Spell oneline
+syn region swiftCommentBlock matchgroup=swiftCommentBlockDelim start="/\*" end="\*/" contains=swiftCommentBlockNest,@swiftCommentBlockMarker,@Spell keepend
+syn region swiftCommentBlockNest matchgroup=swiftCommentBlockDelim start="/\*" end="\*/" contains=swiftCommentBlockNest,@swiftCommentBlockMarker,@Spell contained keepend extend
 
-syn region swiftDocCommentLine excludenl start="///" end="$" contains=@Spell oneline
-syn region swiftDocCommentBlock matchgroup=swiftDocCommentBlockDelim start="/\*\*" end="\*/" contains=swiftCommentBlockNest,@Spell
+syn region swiftDocCommentLine excludenl start="///" end="$" contains=@swiftCommentLineMarker,@Spell oneline
+syn region swiftDocCommentBlock matchgroup=swiftDocCommentBlockDelim start="/\*\*" end="\*/" contains=swiftCommentBlockNest,@swiftCommentBlockMarker,@Spell keepend
+
+" it seems the markers don't care about word boundaries, only that the literal
+" substring matches
+syn match swiftCommentTodo /TODO:\|FIXME:/ contained
+" for MARK: we want to highlight the rest of the line as well. TODO: and
+" FIXME: actually use the rest of the line too, but marks are used for
+" separation and should be more distinct
+syn region swiftCommentLineMark excludenl start=/MARK:/ end=/$/ contained contains=@Spell oneline
+syn cluster swiftCommentLineMarker contains=swiftCommentTodo,swiftCommentLineMark
+syn region swiftCommentBlockMark excludenl start=/MARK:/ end=/$/ end=,\ze/\*, contained contains=@Spell oneline
+syn cluster swiftCommentBlockMarker contains=swiftCommentTodo,swiftCommentBlockMark
 
 " Default highlighting {{{1
 
@@ -238,6 +249,10 @@ hi def link swiftCommentBlockNest swiftCommentBlock
 hi def link swiftDocCommentLine SpecialComment
 hi def link swiftDocCommentBlock swiftDocCommentLine
 hi def link swiftDocCommentBlockDelim swiftDocCommentBlock
+
+hi def link swiftCommentTodo Todo
+hi def link swiftCommentLineMark PreProc
+hi def link swiftCommentBlockMark PreProc
 
 " }}}1
 
