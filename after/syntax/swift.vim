@@ -3,7 +3,7 @@
 " Description: Conceal support for Swift
 " Last Change: June 26, 2014
 
-if exists('g:swift_no_conceal') || !has('conceal') || &enc != 'utf-8'
+if !has('conceal') || &enc != 'utf-8' || get(b:, 'swift_no_conceal', get(g:, 'swift_no_conceal'))
     finish
 endif
 

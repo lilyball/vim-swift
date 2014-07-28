@@ -4,14 +4,27 @@
 CONTENTS                                                    *swift* *ft-swift*
 
 1. Introduction                                                  |swift-intro|
-2. Commands                                                   |swift-commands|
-3. Mappings                                                   |swift-mappings|
+2. Settings                                                   |swift-settings|
+3. Commands                                                   |swift-commands|
+4. Mappings                                                   |swift-mappings|
 
 ==============================================================================
 INTRODUCTION                                                     *swift-intro*
 
 This plugin provides syntax and supporting functionality for the Swift
 filetype.
+
+==============================================================================
+SETTINGS                                                      *swift-settings*
+
+This plugin has variables you can define in your vimrc that change the
+behavior of the plugin.
+
+                                                          *g:swift_no_conceal*
+g:swift_no_conceal~
+	Set this option to turn off |conceal| support: >
+	    let g:swift_no_conceal = 1
+<
 
 ==============================================================================
 COMMANDS                                                      *swift-commands*
