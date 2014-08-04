@@ -42,7 +42,7 @@ endfunction
 call g:SyntasticRegistry.CreateAndRegisterChecker({
             \ 'filetype': 'swift',
             \ 'name': 'swift',
-            \ 'exec': 'xcrun swift'})
+            \ 'exec': 'xcrun swiftc'})
 
 let &cpo = s:save_cpo
 unlet s:save_cpo
