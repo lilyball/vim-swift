@@ -31,6 +31,23 @@ syn cluster swiftDefs contains=NONE
 " @swiftItems are things that cannot be found in an expression
 syn cluster swiftItems contains=@swiftDefs
 
+" Define a few lists that we're going to need later
+" These are all regex snippets, with implied word boundaries
+let s:declarations = ['class', 'struct', 'enum', 'protocol', 'extension',
+            \'var', 'func', 'subscript', 'init', 'deinit', 'operator']
+let s:modifiers = ['final', 'lazy', 'optional', 'required', 'override',
+            \'dynamic', 'prefix', 'infix', 'postfix', 'convenience', 'weak',
+            \'mutating', 'nonmutating']
+let s:accessControl = ['public', 'private', 'internal']
+
+let s:declarations_re = '\<\%('.join(s:declarations, '\|').'\)\>'
+let s:modifiers_re = '\<\%('.join(s:modifiers, '\|').'\)\>'
+let s:accessControl_re = '\<\%('.join(s:accessControl, '\|').'\)\>'
+" inclues an optional parenthesized suffix
+let s:accessControl2_re = s:accessControl_re.'\%(\_s*(\_[^)]*)\)\='
+" includes (optionally-suffixed) access conrol
+let s:modifiers2_re = '\%('.s:modifiers_re.'\|'.s:accessControl2_re.'\)'
+
 " Identifiers {{{2
 
 syn match swiftIdentifier /\<\i\+\>/ display transparent contains=NONE
@@ -41,18 +58,17 @@ syn match swiftIdentifier /\<\i\+\>/ display transparent contains=NONE
 
 " Keywords have priority over other matches, so use syn-match for the few
 " keywords that we want to reuse in other matches.
-syn match swiftKeyword /\<\%(class\|struct\|enum\|protocol\|extension\)\>/
-syn match swiftKeyword /\<\%(var\|func\|subscript\|init\|deinit\)\>/
+exe 'syn match swiftKeyword /'.s:declarations_re.'/'
 
 " Access control {{{3
 
 " Define the keywords once because they're keywords, and again for @swiftItems
 " to support the (set) modifier.
 
-syn keyword swiftKeyword internal public private
+exe 'syn keyword swiftKeyword' join(s:accessControl)
 
-syn keyword swiftAccessControl internal public private nextgroup=swiftAccessControlScope skipwhite skipempty
-syn match swiftAccessControlScope /(\_s*set\_s*)\ze\%(\_s*\%(public\|private\|internal\)\%(\_s*(\_[^)]*)\)\=\)*\_s*\<var\>/ contained nextgroup=swiftVarDef,swiftAccessControlScope skipwhite skipempty
+exe 'syn keyword swiftAccessControl' join(s:accessControl) 'nextgroup=swiftAccessControlScope skipwhite skipempty'
+exe 'syn match swiftAccessControlScope /(\_s*set\_s*)\ze\%(\_s*'.s:modifiers2_re.'\)*\_s*\<var\>/ contained skipwhite skipempty'
 syn cluster swiftItems add=swiftAccessControl
 
 " Other keywords {{{3
@@ -66,7 +82,7 @@ syn keyword swiftKeyword __COLUMN__ __FILE__ __FUNCTION__ __LINE__
 
 " Undocumented keywords {{{3
 
-syn keyword swiftKeyword new dynamic
+syn keyword swiftKeyword new
 
 " Built-in types {{{2
 " This is just the types that represent primitives or other commonly-used
@@ -141,15 +157,11 @@ syn region swiftAttributeArgumentsNest matchgroup=swiftAttributeArguments start=
 " Types (struct/class/etc) {{{3
 syn match swiftTypeDef /\<\%(class\|struct\|enum\|protocol\|extension\)\>\_[^{]*\ze{/ contains=TOP,@swiftItems nextgroup=swiftTypeBody
 syn region swiftTypeBody matchgroup=swiftTypeBody start="{" end="}" contained contains=TOP fold
-syn match swiftTypeBodyKeywords /\<\%(mutating\|nonmutating\|override\)\>/ contained containedin=swiftTypeBody
 syn cluster swiftDefs add=swiftTypeDef
 
 " Operators {{{3
-syn region swiftOperatorDef start=/\<operator\_s\+\%(prefix\|postfix\)\>/ end="\ze{" contains=swiftOperatorDefKeywords,swiftOperator nextgroup=swiftOperatorEmptyBody
-syn region swiftOperatorDef start="\<operator\_s\+infix\>" end="\ze{"  contains=swiftOperatorDefKeywords,swiftOperator nextgroup=swiftOperatorInfixBody
-syn region swiftOperatorEmptyBody start="{" end="}" contained
-syn region swiftOperatorInfixBody start="{" end="}" contained contains=swiftOperatorPrecedence,swiftOperatorAssociativity fold
-syn match swiftOperatorDefKeywords /\<\%(operator\|prefix\|postfix\|infix\)\>/ contained
+syn match swiftOperatorDef /\<operator\_s*[^[:space:]]\+\_s*\ze{/ contains=swiftKeyword,swiftOperator nextgroup=swiftOperatorBody
+syn region swiftOperatorBody start="{" end="}" contained contains=swiftOperatorPrecedence,swiftOperatorAssociativity fold
 syn keyword swiftOperatorPrecedence contained nextgroup=swiftOperatorPrecedenceLevel skipwhite skipempty precedence
 syn match swiftOperatorPrecedenceLevel contained /\d\+/
 syn keyword swiftOperatorAssociativity contained nextgroup=swiftOperatorAssociativityValue skipwhite skipempty associativity
@@ -172,13 +184,14 @@ syn match swiftVarDef /\<var\>[^{=]*\ze{/ contains=TOP,swiftVarDef,@swiftDefs ne
 syn region swiftVarBody matchgroup=swiftVarBody start="{" end="}" fold contained contains=TOP,@swiftDefs
 syn keyword swiftVarAttribute contained containedin=swiftVarBody nextgroup=swiftVarAttributeBlock skipwhite skipempty get
 syn match swiftVarAttribute /\<\%(set\|willSet\|didSet\)\>/ contained containedin=swiftVarBody nextgroup=swiftVarAttributeArg,swiftVarAttributeBlock skipwhite skipempty
+syn match swiftVarAttribute /\<\%(mutating\|nonmutating\)\>\ze\_s*\<\%(get\|set\|willSet\|didSet\)\>/ contained containedin=swiftVarBody nextgroup=swiftVarAttribute skipwhite skipempty
 syn region swiftVarAttributeArg start="(" end=")" contained contains=TOP,@swiftItems nextgroup=swiftVarAttributeBlock skipwhite skipempty
 syn region swiftVarAttributeBlock matchgroup=swiftVarAttributeBlock start="{" end="}" contained contains=TOP,@swiftDefs fold
 syn cluster swiftItems add=swiftVarDef
 
 " Modifiers {{{3
 
-syn match swiftDeclarationModifier /\<\%(final\|lazy\|optional\|required\|convenience\|weak\|mutating\|nonmutating\)\>\ze\_s*\%(\%(final\|lazy\|optional\|required\|convenience\|weak\|mutating\|nonmutating\)\_s*\)*\<\%(class\|struct\|enum\|protocol\|extension\|var\|func\|subscript\|init\|deinit\)\>/
+exe 'syn match swiftDeclarationModifier /'.s:modifiers_re.'\ze\%(\_s*'.s:modifiers2_re.'\)*\_s*'.s:declarations_re.'/'
 syn cluster swiftItems add=swiftDeclarationModifier
 
 " Comments {{{2
@@ -226,8 +239,6 @@ hi def link swiftPlaceholder Identifier
 
 hi def link swiftAttribute          Macro
 hi def link swiftAttributeArguments Macro
-
-hi def link swiftTypeBodyKeywords swiftKeyword
 
 hi def link swiftOperatorDefKeywords swiftKeyword
 hi def link swiftOperatorPrecedence swiftKeyword
