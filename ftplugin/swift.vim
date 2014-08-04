@@ -21,6 +21,10 @@ setlocal textwidth=80
 setlocal formatoptions-=t formatoptions+=croqnl
 silent! setlocal formatoptions+=j
 
+" cc=+1 is common, but showing it for the comment width kind of sucks.
+" Let's pick 120 characters instead, that's a good length.
+setlocal colorcolumn=121
+
 setlocal suffixesadd=.swift
 
 setlocal comments=s1:/**,mb:*,ex:*/,s1:/*,mb:*,ex:*/,:///,://
@@ -74,6 +78,7 @@ endif
 
 let b:undo_ftplugin = "
             \ setlocal expandtab< shiftwidth< tabstop< softtabstop< textwidth<
+            \|setlocal colorcolumn<
             \|setlocal formatoptions< suffixesadd< comments< commentstring<
             \|setlocal showmatch<
             \|delcommand SwiftRun
