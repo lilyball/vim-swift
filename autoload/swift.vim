@@ -1,7 +1,7 @@
 " File: autoload/swift.vim
 " Author: Kevin Ballard
 " Description: Helper functions for Swift
-" Last Change: Jul 25, 2014
+" Last Change: Aug 04, 2014
 
 " Run {{{1
 
@@ -36,7 +36,7 @@ function! s:Run(path, swift_args, args)
 		let sdk = system('xcrun -show-sdk-path -sdk macosx')[:-2]
 		let swift_args = ['-sdk', sdk, a:path, '-o', exepath] + a:swift_args
 
-		let swift = 'xcrun swift'
+		let swift = 'xcrun swiftc'
 
 		let output = system(swift . " " . join(swift_args))
 		if output != ''
