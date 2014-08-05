@@ -77,7 +77,7 @@ exe 'syn match swiftKeyword /'.s:declarations_re.'/'
 exe 'syn keyword swiftKeyword' join(s:accessControl)
 
 exe 'syn keyword swiftAccessControl' join(s:accessControl) 'nextgroup=swiftAccessControlScope skipwhite skipempty'
-exe 'syn match swiftAccessControlScope /(\_s*set\_s*)\ze\%(\_s*'.s:modifiers2_re.'\)*\_s*\<var\>/ contained skipwhite skipempty'
+exe 'syn match swiftAccessControlScope /(\_s*set\_s*)\ze\%(\_s*'.s:modifiers2_re.'\)*\_s*\<\%(var\|subscript\)\>/ contained skipwhite skipempty'
 syn cluster swiftItems add=swiftAccessControl
 
 " Other keywords {{{3
@@ -225,21 +225,32 @@ syn cluster swiftDefs add=swiftOperatorDef
 " Functions {{{3
 
 syn match swiftFuncDef /\<func\>\_[^{]*\ze{/ contains=TOP,@swiftDefs,swiftFuncDef nextgroup=swiftFuncBody
-syn match swiftSpecialFuncDef /\<\%(init\|deinit\|subscript\)\>\_[^{]*\ze{/ contains=TOP,@swiftDefs,swiftFuncDef nextgroup=swiftFuncBody
+syn match swiftSpecialFuncDef /\<\%(init\|deinit\)\>\_[^{]*\ze{/ contains=TOP,@swiftDefs,swiftFuncDef nextgroup=swiftFuncBody
 syn region swiftFuncBody matchgroup=swiftFuncBody start="{" end="}" contained contains=TOP,@swiftDefs fold
 syn region swiftFuncArgs matchgroup=swiftFuncArgs start="(" end=")" contained containedin=swiftFuncDef contains=TOP,@swiftItems transparent
 syn keyword swiftFuncArgInout contained containedin=swiftFuncArgs inout
 syn cluster swiftItems add=swiftFuncDef
 syn cluster swiftDefs add=swiftSpecialFuncDef
 
+" Subscripts {{{3
+
+syn match swiftSubscriptDef /\<subscript\>\_[^{]*\ze{/ contains=TOP,@swiftItems nextgroup=swiftSubscriptBody
+syn region swiftSubscriptBody matchgroup=swiftSubscriptBody start="{" end="}" fold contained contains=TOP,@swiftDefs
+syn keyword swiftSubscriptAttribute contained containedin=swiftSubscriptBody nextgroup=swiftSubscriptAttriuteBlock skipwhite skipempty get
+syn match swiftSubscriptAttribute /\<set\>/ contained containedin=swiftSubscriptBody nextgroup=swiftSubscriptAttributeArg,swiftSubscriptAttriuteBlock skipwhite skipempty
+syn match swiftSubscriptAttribute /\<\%(mutating\|nonmutating\)\>\ze\_s*\<\%(get\|set\)\>/ contained containedin=swiftSubscriptBody nextgroup=swiftSubscriptAttribute skipwhite skipempty
+syn region swiftSubscriptAttributeArg matchgroup=swiftSubscriptAttributeArg start="(" end=")" contained contains=TOP,@swiftItems nextgroup=swiftSubscriptAttributeBlock skipwhite skipempty
+syn region swiftSubscriptAttributeBlock matchgroup=swiftSubscriptAttributeBlock start="{" end="}" contained contains=TOP,@swiftDefs fold
+syn cluster swiftDefs add=swiftSubscriptDef
+
 " Variables {{{3
 
-syn match swiftVarDef /\<var\>[^{=]*\ze{/ contains=TOP,swiftVarDef,@swiftDefs nextgroup=swiftVarBody
+syn match swiftVarDef /\<var\>\_[^{=]*\ze{/ contains=TOP,swiftVarDef,@swiftDefs nextgroup=swiftVarBody
 syn region swiftVarBody matchgroup=swiftVarBody start="{" end="}" fold contained contains=TOP,@swiftDefs
 syn keyword swiftVarAttribute contained containedin=swiftVarBody nextgroup=swiftVarAttributeBlock skipwhite skipempty get
 syn match swiftVarAttribute /\<\%(set\|willSet\|didSet\)\>/ contained containedin=swiftVarBody nextgroup=swiftVarAttributeArg,swiftVarAttributeBlock skipwhite skipempty
 syn match swiftVarAttribute /\<\%(mutating\|nonmutating\)\>\ze\_s*\<\%(get\|set\|willSet\|didSet\)\>/ contained containedin=swiftVarBody nextgroup=swiftVarAttribute skipwhite skipempty
-syn region swiftVarAttributeArg start="(" end=")" contained contains=TOP,@swiftItems nextgroup=swiftVarAttributeBlock skipwhite skipempty
+syn region swiftVarAttributeArg matchgroup=swiftVarAttributeArg start="(" end=")" contained contains=TOP,@swiftItems nextgroup=swiftVarAttributeBlock skipwhite skipempty
 syn region swiftVarAttributeBlock matchgroup=swiftVarAttributeBlock start="{" end="}" contained contains=TOP,@swiftDefs fold
 syn cluster swiftItems add=swiftVarDef
 
@@ -306,6 +317,7 @@ hi def link swiftOperatorAssignment swiftKeyword
 
 hi def link swiftFuncArgInout swiftKeyword
 
+hi def link swiftSubscriptAttribute swiftKeyword
 hi def link swiftVarAttribute swiftKeyword
 
 hi def link swiftDeclarationModifier swiftKeyword
