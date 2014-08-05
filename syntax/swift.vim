@@ -57,7 +57,8 @@ let s:accessControl_re = '\<\%('.join(s:accessControl, '\|').'\)\>'
 " inclues an optional parenthesized suffix
 let s:accessControl2_re = s:accessControl_re.'\%(\_s*(\_[^)]*)\)\='
 " includes (optionally-suffixed) access conrol
-let s:modifiers2_re = '\%('.s:modifiers_re.'\|'.s:accessControl2_re.'\)'
+" as well as occasional modifiers like class/static
+let s:modifiers2_re = '\%('.s:modifiers_re.'\|'.s:accessControl2_re.'\|\<static\>\|\<class\>\)'
 
 " Identifiers {{{2
 
@@ -264,6 +265,7 @@ syn cluster swiftItems add=swiftVarDef
 " Modifiers {{{3
 
 exe 'syn match swiftDeclarationModifier /'.s:modifiers_re.'\ze\%(\_s*'.s:modifiers2_re.'\)*\_s*'.s:declarations_re.'/'
+exe 'syn match swiftDeclarationModifier /\<\%(class\|static\)\>\ze\%(\_s*\w\+\%(\_s*(\_s*\w*\_s*)\)\=\)\{,}\_s*'.s:declarations_re.'/'
 syn cluster swiftItems add=swiftDeclarationModifier
 
 " Comments {{{2
