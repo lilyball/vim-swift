@@ -46,11 +46,13 @@ let s:declarations = ['class', 'struct', 'enum', 'protocol', 'extension',
             \'var', 'func', 'subscript', 'init', 'deinit', 'operator']
 let s:modifiers = ['final', 'lazy', 'optional', 'required', 'override',
             \'dynamic', 'prefix', 'infix', 'postfix', 'convenience', 'weak',
-            \'mutating', 'nonmutating']
+            \'unowned', 'mutating', 'nonmutating']
+let s:modifiers_suffixed = ['unowned\_s*(safe)', 'unowned\_s*(unsafe)']
 let s:accessControl = ['public', 'private', 'internal']
 
 let s:declarations_re = '\<\%('.join(s:declarations, '\|').'\)\>'
-let s:modifiers_re = '\<\%('.join(s:modifiers, '\|').'\)\>'
+let s:modifiers_re = '\<\%('.join(map(s:modifiers, 'v:val."\\>"'), '\|')
+            \.'\|'.join(s:modifiers_suffixed, '\|').'\)'
 let s:accessControl_re = '\<\%('.join(s:accessControl, '\|').'\)\>'
 " inclues an optional parenthesized suffix
 let s:accessControl2_re = s:accessControl_re.'\%(\_s*(\_[^)]*)\)\='
