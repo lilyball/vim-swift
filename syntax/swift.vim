@@ -214,8 +214,6 @@ syn region swiftAttributeArgumentsNest matchgroup=swiftAttributeArguments start=
 
 " Types (struct/class/etc) {{{3
 syn region swiftTypeDef start=/\<\%(class\|struct\|enum\|protocol\|extension\)\>/ end=/\ze{/ end=/\ze;/ contains=TOP,@swiftItems nextgroup=swiftTypeBody keepend
-syn region swiftGenerics matchgroup=swiftGenerics start=/</ end=/>/ contained contains=TOP,@swiftItems,swiftOperator containedin=swiftTypeDef,swiftGenerics keepend extend
-syn match swiftGenericsEqual /==/ contained containedin=swiftGenerics transparent contains=NONE
 syn region swiftTypeBody matchgroup=swiftTypeBody start="{" end="}" contained contains=TOP fold
 syn cluster swiftDefs add=swiftTypeDef
 
@@ -233,7 +231,7 @@ syn cluster swiftDefs add=swiftOperatorDef
 
 syn match swiftFuncDef /\<func\>\_s*[^[:space:]();]\+\_s*\ze\%((\|<\)/ contains=TOP,@swiftItems nextgroup=swiftFuncArgs,swiftFuncGenerics
 syn match swiftSpecialFuncDef /\<\%(init\|deinit\)\>\_s*\ze(/ contains=swiftKeyword nextgroup=swiftFuncArgs
-syn region swiftFuncGenerics start="<" end="\ze." contained contains=swiftGenerics nextgroup=swiftFuncArgs skipwhite skipempty
+syn region swiftFuncGenerics start="<" end="\ze\_." contained contains=swiftGenerics nextgroup=swiftFuncArgs skipwhite skipempty
 syn region swiftFuncArgs matchgroup=swiftFuncArgs start="(" end=")" contained contains=TOP,@swiftItems transparent nextgroup=swiftFuncBody skipwhite skipempty
 syn region swiftFuncBody matchgroup=swiftFuncBody start="{" end="}" contained contains=TOP,@swiftDefs fold
 syn keyword swiftFuncArgInout contained containedin=swiftFuncArgs inout
@@ -253,7 +251,9 @@ syn cluster swiftDefs add=swiftSubscriptDef
 
 " Variables {{{3
 
-syn match swiftVarDef /\<var\>\_[^{=]*\ze{/ contains=TOP,swiftVarDef,@swiftDefs nextgroup=swiftVarBody
+syn match swiftVarDef /\<var\>\_s*\%([^[:space:][:punct:][:cntrl:][:digit:]]\|\i\)\%([^[:space:][:punct:][:cntrl:]]\|\i\)*/ contains=swiftKeyword,swiftIdentifier nextgroup=swiftVarTypeAscription,swiftVarBody skipwhite skipempty
+syn match swiftVarTypeAscription /:/ contained nextgroup=swiftVarType skipwhite skipempty
+syn region swiftVarType start=/./ end=/\ze\_./ contained contains=swiftTypeExpr nextgroup=swiftVarBody skipwhite skipempty
 syn region swiftVarBody matchgroup=swiftVarBody start="{" end="}" fold contained contains=TOP,@swiftDefs
 syn keyword swiftVarAttribute contained containedin=swiftVarBody nextgroup=swiftVarAttributeBlock skipwhite skipempty get
 syn match swiftVarAttribute /\<\%(set\|willSet\|didSet\)\>/ contained containedin=swiftVarBody nextgroup=swiftVarAttributeArg,swiftVarAttributeBlock skipwhite skipempty
@@ -261,6 +261,14 @@ syn match swiftVarAttribute /\<\%(mutating\|nonmutating\)\>\ze\_s*\<\%(get\|set\
 syn region swiftVarAttributeArg matchgroup=swiftVarAttributeArg start="(" end=")" contained contains=TOP,@swiftItems nextgroup=swiftVarAttributeBlock skipwhite skipempty
 syn region swiftVarAttributeBlock matchgroup=swiftVarAttributeBlock start="{" end="}" contained contains=TOP,@swiftDefs fold
 syn cluster swiftItems add=swiftVarDef
+
+" Type patterns {{{3
+
+syn region swiftTypeExpr start=/./ end=/\ze\_[[:space:]{})\]]/ contained contains=TOP,@swiftItems skipwhite skipempty
+syn region swiftTypeArrayDict matchgroup=swiftTypeBrackets start='\[' end='\]' contained contains=TOP,@swiftItems containedin=swiftTypeExpr,swiftTypeArrayDict,swiftGenerics keepend extend
+syn match swiftTypeBracketsColon /:/ contained containedin=swiftTypeArrayDict
+syn region swiftGenerics matchgroup=swiftGenerics start=/</ end=/>/ contained contains=TOP,@swiftItems,swiftOperator containedin=swiftTypeDef,swiftTypeExpr,swiftGenerics keepend extend
+syn match swiftGenericsEqual /==/ contained containedin=swiftGenerics transparent contains=NONE
 
 " Modifiers {{{3
 
