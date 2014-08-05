@@ -212,7 +212,9 @@ syn region swiftAttributeArgumentsNest matchgroup=swiftAttributeArguments start=
 " Declarations {{{2
 
 " Types (struct/class/etc) {{{3
-syn match swiftTypeDef /\<\%(class\|struct\|enum\|protocol\|extension\)\>\_[^{]*\ze{/ contains=TOP,@swiftItems nextgroup=swiftTypeBody
+syn region swiftTypeDef start=/\<\%(class\|struct\|enum\|protocol\|extension\)\>/ end=/\ze{/ end=/\ze;/ contains=TOP,@swiftItems nextgroup=swiftTypeBody keepend
+syn region swiftGenerics matchgroup=swiftGenerics start=/</ end=/>/ contained contains=TOP,@swiftItems,swiftOperator containedin=swiftTypeDef,swiftGenerics keepend extend
+syn match swiftGenericsEqual /==/ contained containedin=swiftGenerics transparent contains=NONE
 syn region swiftTypeBody matchgroup=swiftTypeBody start="{" end="}" contained contains=TOP fold
 syn cluster swiftDefs add=swiftTypeDef
 
@@ -228,8 +230,9 @@ syn cluster swiftDefs add=swiftOperatorDef
 
 " Functions {{{3
 
-syn match swiftFuncDef /\<func\>\_s*[^[:space:]();]\+\_s*\ze(/ contains=TOP,@swiftItems nextgroup=swiftFuncArgs
+syn match swiftFuncDef /\<func\>\_s*[^[:space:]();]\+\_s*\ze\%((\|<\)/ contains=TOP,@swiftItems nextgroup=swiftFuncArgs,swiftFuncGenerics
 syn match swiftSpecialFuncDef /\<\%(init\|deinit\)\>\_s*\ze(/ contains=swiftKeyword nextgroup=swiftFuncArgs
+syn region swiftFuncGenerics start="<" end="\ze." contained contains=swiftGenerics nextgroup=swiftFuncArgs skipwhite skipempty
 syn region swiftFuncArgs matchgroup=swiftFuncArgs start="(" end=")" contained contains=TOP,@swiftItems transparent nextgroup=swiftFuncBody skipwhite skipempty
 syn region swiftFuncBody matchgroup=swiftFuncBody start="{" end="}" contained contains=TOP,@swiftDefs fold
 syn keyword swiftFuncArgInout contained containedin=swiftFuncArgs inout
