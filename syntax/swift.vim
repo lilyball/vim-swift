@@ -161,11 +161,12 @@ syn cluster swiftDefs add=swiftTypeDef
 
 " Operators {{{3
 syn match swiftOperatorDef /\<operator\_s*[^[:space:]]\+\_s*\ze{/ contains=swiftKeyword,swiftOperator nextgroup=swiftOperatorBody
-syn region swiftOperatorBody start="{" end="}" contained contains=swiftOperatorPrecedence,swiftOperatorAssociativity fold
+syn region swiftOperatorBody start="{" end="}" contained contains=swiftOperatorPrecedence,swiftOperatorAssociativity,swiftOperatorAssignment fold
 syn keyword swiftOperatorPrecedence contained nextgroup=swiftOperatorPrecedenceLevel skipwhite skipempty precedence
 syn match swiftOperatorPrecedenceLevel contained /\d\+/
 syn keyword swiftOperatorAssociativity contained nextgroup=swiftOperatorAssociativityValue skipwhite skipempty associativity
 syn keyword swiftOperatorAssociativityValue contained left right none
+syn keyword swiftOperatorAssignment contained assignment
 syn cluster swiftDefs add=swiftOperatorDef
 
 " Functions {{{3
@@ -245,6 +246,7 @@ hi def link swiftOperatorPrecedence swiftKeyword
 hi def link swiftOperatorPrecedenceLevel swiftInteger
 hi def link swiftOperatorAssociativity swiftKeyword
 hi def link swiftOperatorAssociativityValue swiftKeyword
+hi def link swiftOperatorAssignment swiftKeyword
 
 hi def link swiftFuncArgInout swiftKeyword
 
