@@ -63,6 +63,8 @@ let s:modifiers2_re = '\%('.s:modifiers_re.'\|'.s:accessControl2_re.'\)'
 
 syn match swiftIdentifier /\<\i\+\>/ display transparent contains=NONE
 
+syn match swiftIdentifier /`\i\+`/ transparent contains=NONE
+
 " Keywords {{{2
 
 " Declarations {{{3
