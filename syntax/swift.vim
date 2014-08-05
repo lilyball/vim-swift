@@ -224,10 +224,10 @@ syn cluster swiftDefs add=swiftOperatorDef
 
 " Functions {{{3
 
-syn match swiftFuncDef /\<func\>\_[^{]*\ze{/ contains=TOP,@swiftDefs,swiftFuncDef nextgroup=swiftFuncBody
-syn match swiftSpecialFuncDef /\<\%(init\|deinit\)\>\_[^{]*\ze{/ contains=TOP,@swiftDefs,swiftFuncDef nextgroup=swiftFuncBody
+syn match swiftFuncDef /\<func\>\_s*[^[:space:]();]\+\_s*\ze(/ contains=TOP,@swiftItems nextgroup=swiftFuncArgs
+syn match swiftSpecialFuncDef /\<\%(init\|deinit\)\>\_s*\ze(/ contains=swiftKeyword nextgroup=swiftFuncArgs
+syn region swiftFuncArgs matchgroup=swiftFuncArgs start="(" end=")" contained contains=TOP,@swiftItems transparent nextgroup=swiftFuncBody skipwhite skipempty
 syn region swiftFuncBody matchgroup=swiftFuncBody start="{" end="}" contained contains=TOP,@swiftDefs fold
-syn region swiftFuncArgs matchgroup=swiftFuncArgs start="(" end=")" contained containedin=swiftFuncDef contains=TOP,@swiftItems transparent
 syn keyword swiftFuncArgInout contained containedin=swiftFuncArgs inout
 syn cluster swiftItems add=swiftFuncDef
 syn cluster swiftDefs add=swiftSpecialFuncDef
