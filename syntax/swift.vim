@@ -93,20 +93,60 @@ syn keyword swiftKeyword __COLUMN__ __FILE__ __FUNCTION__ __LINE__
 
 syn keyword swiftKeyword new
 
+" Special types {{{3
+
+syn match swiftKeyword /\.\@1<=\%(Type\|Protocol\)\>/ display
+
 " Built-in types {{{2
 " This is just the types that represent primitives or other commonly-used
 " types, not everything that exists in Swift.
 
-syn keyword swiftType Int Int8 Int16 Int32 Int64
-syn keyword swiftType UInt UInt8 UInt16 UInt32 UInt64
+" Primitive types
+syn keyword swiftType Int Int8 Int16 Int32 Int64 Word IntMax
+syn keyword swiftType UInt UInt8 UInt16 UInt32 UInt64 UWord UIntMax
 syn keyword swiftType Double Float Float80
-syn keyword swiftType Bool
-syn keyword swiftType String Array Dictionary
-syn keyword swiftType Optional ImplicitlyUnwrappedOptional
-syn keyword swiftType Range
-syn keyword swiftType UTF8 UTF16 UTF32 UnicodeScalar Character
+syn keyword swiftType Bool Bit
 
-syn keyword swiftType Any AnyObject AnyClass
+" Containers
+syn keyword swiftType Array Dictionary
+syn keyword swiftType Optional ImplicitlyUnwrappedOptional
+syn keyword swiftType ContiguousArray HeapBuffer
+
+" String-related types
+syn keyword swiftType String UTF8 UTF16 UTF32 UnicodeScalar Character
+
+" Ranges/intervals
+syn keyword swiftType Range ClosedInterval HalfOpenInterval
+syn keyword swiftType SrideTo StrideThrough
+
+" Pointers
+syn keyword swiftType UnsafePointer UnsafeMutablePointer
+syn keyword swiftType AutoreleasingUnsafeMutablePointer
+syn keyword swiftType COpaquePointer CFunctionPointer
+syn keyword swiftType UnsafeBufferPointer UnsafeMutableBufferPointer
+
+" Sequences/Collections/Generators
+syn keyword swiftType IndexingGenerator LazySequence LazyBidirectionalCollection LazyRandomAccessCollection
+syn keyword swiftType FilterCollectionView
+syn keyword swiftType BidirectionalReverseView RandomAccessReverseView
+syn keyword swifTType UnsafeBufferPointerGenerator
+
+" Miscellaneous
+syn keyword swiftType ObjectIdentifier CVarArgType
+
+" Protocols
+syn keyword swiftProtocol Any AnyObject AnyClass
+syn keyword swiftProtocol ForwardIndexType BidirectionalIndexType RandomAccessIndexType
+syn keyword swiftProtocol Comparable Hashable Equatable Strideable Reflectable
+syn keyword swiftProtocol NilLiteralConvertible DictionaryLiteralConvertible ArrayLiteralConvertible IntegerLiteralConvertible
+syn keyword swiftProtocol Streamable Printable DebugPrintable
+syn keyword swiftProtocol UnicodeCodecType
+syn keyword swiftProtocol IntegerType UnsignedIntegerType BooleanType
+syn keyword swiftProtocol SignedNumberType AbsoluteValuable IntervalType
+syn keyword swiftProtocol CollectionType SequenceType GeneratorType
+syn keyword swiftProtocol RawOptionSetType BitwiseOperationsType
+syn keyword swiftProtocol OutputStreamType
+syn keyword swiftProtocol ExtensibleCollectionType
 
 " Literals {{{2
 
@@ -141,6 +181,10 @@ syn keyword swiftBoolean true false
 " Nil literal {{{3
 
 syn keyword swiftNil nil
+
+" Built-in enum variants {{{3
+
+syn match swiftEnumLiteral /\.\@1<=\%(Some\|None\)/
 
 " Miscellaneous {{{2
 
@@ -228,14 +272,17 @@ syn cluster swiftCommentBlockMarker contains=swiftCommentTodo,swiftCommentBlockM
 
 hi def link swiftKeyword Keyword
 hi def link swiftType    Type
+hi def link swiftProtocol swiftType
 
 hi def link swiftAccessControl      Keyword
 hi def link swiftAccessControlScope swiftAccessControl
 
-hi def link swiftInteger  Number
-hi def link swiftFloat    Number
-hi def link swiftBoolean  Number
+hi def link swiftLiteral  Number
+hi def link swiftInteger  swiftLiteral
+hi def link swiftFloat    swiftLiteral
+hi def link swiftBoolean  swiftLiteral
 hi def link swiftNil      swiftKeyword
+hi def link swiftEnumLiteral swiftLiteral
 
 hi def link swiftString String
 hi def link swiftStringEscapeError Error
