@@ -106,23 +106,25 @@ syn match swiftKeyword /\.\@1<=\%(Type\|Protocol\)\>/ display
 " This is just the types that represent primitives or other commonly-used
 " types, not everything that exists in Swift.
 
+" Structs/Classes {{{3
+
 " Primitive types
 syn keyword swiftType Int Int8 Int16 Int32 Int64 Word IntMax
 syn keyword swiftType UInt UInt8 UInt16 UInt32 UInt64 UWord UIntMax
-syn keyword swiftType Double Float Float80
-syn keyword swiftType Bool Bit
+syn keyword swiftType Double Float Float32 Float64 Float80
+syn keyword swiftType Bool Bit Void
 
 " Containers
-syn keyword swiftType Array Dictionary
+syn keyword swiftType Array Dictionary Slice
 syn keyword swiftType Optional ImplicitlyUnwrappedOptional
 syn keyword swiftType ContiguousArray HeapBuffer
 
 " String-related types
-syn keyword swiftType String UTF8 UTF16 UTF32 UnicodeScalar Character
+syn keyword swiftType String StaticString UTF8 UTF16 UTF32 UnicodeScalar Character
 
 " Ranges/intervals
 syn keyword swiftType Range ClosedInterval HalfOpenInterval
-syn keyword swiftType SrideTo StrideThrough
+syn keyword swiftType StrideTo StrideThrough
 
 " Pointers
 syn keyword swiftType UnsafePointer UnsafeMutablePointer
@@ -131,27 +133,46 @@ syn keyword swiftType COpaquePointer CFunctionPointer
 syn keyword swiftType UnsafeBufferPointer UnsafeMutableBufferPointer
 
 " Sequences/Collections/Generators
-syn keyword swiftType IndexingGenerator LazySequence LazyBidirectionalCollection LazyRandomAccessCollection
-syn keyword swiftType FilterCollectionView
+syn keyword swiftType IndexingGenerator LazySequence
+syn keyword swiftType LazyForwardCollection LazyBidirectionalCollection LazyRandomAccessCollection
+syn keyword swiftType FilterCollectionView FilterSequenceView MapCollectionView MapSequenceView
 syn keyword swiftType BidirectionalReverseView RandomAccessReverseView
-syn keyword swifTType UnsafeBufferPointerGenerator
+syn keyword swiftType UnsafeBufferPointerGenerator
+syn keyword swiftType EmptyCollection GeneratorOf SequenceOf GeneratorSequence
+syn keyword swiftType CollectionOfOne GeneratorOfOne
+syn keyword swiftType Zip2 Repeat PermutationGenerator
+
+" C compatibility
+syn keyword swiftType CInt CUnsignedInt CShort CUnsignedShort CLong CUnsignedLong CLongLong CUnsignedLongLong
+syn keyword swiftType \CChar CSignedChar CUnsignedChar CChar16 CChar32 CWideChar CBool
+syn keyword swiftType CDouble CFloat
+syn keyword swiftType CVarArgType CVaListPointer VaListBuilder
 
 " Miscellaneous
-syn keyword swiftType ObjectIdentifier CVarArgType
+syn keyword swiftType Unmanaged
+syn keyword swiftType ObjectIdentifier
+syn keyword swiftType FloatingPointClassification
+syn keyword swiftType MirrorDisposition QuickLookObject
+syn keyword swiftType UnicodeDecodingResult
+syn keyword swiftType RawRepresentable
 
-" Protocols
+" Protocols {{{3
+
 syn keyword swiftProtocol Any AnyObject AnyClass
 syn keyword swiftProtocol ForwardIndexType BidirectionalIndexType RandomAccessIndexType
-syn keyword swiftProtocol Comparable Hashable Equatable Strideable Reflectable
-syn keyword swiftProtocol NilLiteralConvertible DictionaryLiteralConvertible ArrayLiteralConvertible IntegerLiteralConvertible
+syn keyword swiftProtocol Comparable Hashable Equatable Strideable Reflectable Sliceable MutableSliceable
+syn keyword swiftProtocol NilLiteralConvertible DictionaryLiteralConvertible ArrayLiteralConvertible IntegerLiteralConvertible ExtendedGraphemeClusterLiteralConvertible CharacterLiteralConvertible FloatLiteralConvertible StringLiteralConvertible StringInterpolationConvertible BooleanLiteralConvertible
 syn keyword swiftProtocol Streamable Printable DebugPrintable
 syn keyword swiftProtocol UnicodeCodecType
-syn keyword swiftProtocol IntegerType UnsignedIntegerType BooleanType
+syn keyword swiftProtocol IntegerType SignedIntegerType UnsignedIntegerType BooleanType FloatingPointType
 syn keyword swiftProtocol SignedNumberType AbsoluteValuable IntervalType
-syn keyword swiftProtocol CollectionType SequenceType GeneratorType
+syn keyword swiftProtocol IntegerArithmeticType
+syn keyword swiftProtocol CollectionType MutableCollectionType SequenceType GeneratorType
 syn keyword swiftProtocol RawOptionSetType BitwiseOperationsType
-syn keyword swiftProtocol OutputStreamType
+syn keyword swiftProtocol OutputStreamType SinkType
 syn keyword swiftProtocol ExtensibleCollectionType
+syn keyword swiftProtocol MirrorType
+syn keyword swiftProtocol StringElementType
 
 " Literals {{{2
 
@@ -187,9 +208,11 @@ syn keyword swiftBoolean true false
 
 syn keyword swiftNil nil
 
-" Built-in enum variants {{{3
+" Library values {{{2
 
-syn match swiftEnumLiteral /\.\@1<=\%(Some\|None\)/
+syn match swiftLibraryValue /\.\@1<!\<\%(C_ARGC\|C_ARGV\|Process\)\>/
+
+syn match swiftLibraryEnumValue /\.\@1<=\%(Some\ze(\|None\>\)/
 
 " Miscellaneous {{{2
 
@@ -300,7 +323,7 @@ syn cluster swiftCommentBlockMarker contains=swiftCommentTodo,swiftCommentBlockM
 
 hi def link swiftKeyword Keyword
 hi def link swiftType    Type
-hi def link swiftProtocol swiftType
+hi def link swiftProtocol PreProc
 
 hi def link swiftAccessControl      Keyword
 hi def link swiftAccessControlScope swiftAccessControl
@@ -310,7 +333,9 @@ hi def link swiftInteger  swiftLiteral
 hi def link swiftFloat    swiftLiteral
 hi def link swiftBoolean  swiftLiteral
 hi def link swiftNil      swiftKeyword
-hi def link swiftEnumLiteral swiftLiteral
+
+hi def link swiftLibraryValue Identifier
+hi def link swiftLibraryEnumValue swiftLibraryValue
 
 hi def link swiftString String
 hi def link swiftStringEscapeError Error
