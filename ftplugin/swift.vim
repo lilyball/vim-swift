@@ -11,7 +11,7 @@ let b:did_ftplugin = 1
 let s:save_cpo = &cpo
 set cpo&vim
 
-" Variables {{{1
+" Settings {{{1
 
 " Match Xcode default indentation settings
 setlocal expandtab shiftwidth=4 tabstop=4 softtabstop=4
@@ -29,6 +29,27 @@ setlocal suffixesadd=.swift
 
 setlocal comments=s1:/**,mb:*,ex:*/,s1:/*,mb:*,ex:*/,:///,://
 setlocal commentstring=//%s
+
+let s:fold = has("folding") ? get(b:, 'swift_no_fold', get(g:, 'swift_no_fold')) : 0
+if s:fold != 2
+    if s:fold == 1
+        setlocal foldmethod=syntax
+        setlocal foldlevel<
+    else
+        setlocal foldmethod=syntax
+        setlocal foldlevel=999
+    endif
+    let b:swift__did_set_fold=1
+endif
+unlet s:fold
+
+let s:conceal = has('conceal') ? get(b:, 'swift_no_conceal', get(g:, 'swift_no_conceal')) : 0
+if !s:conceal
+    setlocal conceallevel=2
+    let b:swift__did_set_conceallevel=1
+endif
+unlet s:conceal
+
 
 " Commands {{{1
 
@@ -81,6 +102,14 @@ let b:undo_ftplugin = "
             \|setlocal colorcolumn<
             \|setlocal formatoptions< suffixesadd< comments< commentstring<
             \|setlocal showmatch<
+            \|if exists('b:swift__did_set_fold')
+                \|setlocal foldmethod< foldlevel<
+                \|unlet b:swift__did_set_fold
+            \|endif
+            \|if exists('b:swift__did_set_conceallevel')
+                \|setlocal conceallevel<
+                \|unlet b:swift__did_set_conceallevel
+            \|endif
             \|delcommand SwiftRun
             \|unlet! b:swift_last_swift_args b:swift_last_args
             \|nunmap <buffer> <D-r>

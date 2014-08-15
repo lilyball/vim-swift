@@ -13,6 +13,4 @@ syn match swiftOperatorArrow '->\%([-/=+!*%<>&|^~.]\)\@!' contains=swiftOperator
 
 syn match swiftIdentPrime /\i\@<=__*\>/me=s+1 conceal cchar=′ containedin=swiftIdentifier transparent contains=NONE
 
-setl conceallevel=2
-
 " vim: set et sw=4 ts=4:

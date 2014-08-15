@@ -21,18 +21,6 @@ let &l:iskeyword = '@,' " isalpha(), should cover [a-zA-Z]
             \ . '188-190,192-214,216-246,248-255'
 let &l:isident = &l:iskeyword
 
-let s:fold = has("folding") ? get(b:, 'swift_no_fold', get(g:, 'swift_no_fold')) : 0
-if s:fold == 2
-    setlocal foldmethod<
-    setlocal foldlevel<
-elseif s:fold == 1
-    setlocal foldmethod=syntax
-    setlocal foldlevel<
-else
-    setlocal foldmethod=syntax
-    setlocal foldlevel=999
-endif
-
 " Syntax definitions {{{1
 
 " @swiftDefs are definitions that cannot occur inside closures/functions
