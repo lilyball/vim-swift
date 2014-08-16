@@ -23,10 +23,21 @@ let &l:isident = &l:iskeyword
 
 " Syntax definitions {{{1
 
+" NB: These clusters are expected to only contain items that are at the
+" toplevel. Furthermore, the following set of clusters should cover all
+" toplevel syntax items.
+
 " @swiftDefs are definitions that cannot occur inside closures/functions
 syn cluster swiftDefs contains=NONE
-" @swiftItems are things that cannot be found in an expression
-syn cluster swiftItems contains=@swiftDefs
+" @swiftItems are things that cannot be found in an expression, but are
+" not @swiftDefs
+syn cluster swiftItems contains=NONE
+" @swiftExprs are all other toplevel syntax items
+syn cluster swiftExprs contains=NONE
+
+" In order to support :syn-include embedding, we can't use contains values
+" like contains=TOP,@swiftDefs. This is because the syntax embedding marks all
+" our syntax items as `contained`. Instead, use combinations of the clusters.
 
 " Define a few lists that we're going to need later
 " These are all regex snippets, with implied word boundaries
@@ -53,6 +64,9 @@ let s:modifiers2_re = '\%('.s:modifiers_re.'\|'.s:accessControl2_re.'\|\<static\
 syn match swiftIdentifier /\<\i\+\>/ display transparent contains=NONE
 
 syn match swiftIdentifier /`\i\+`/ transparent contains=NONE
+
+syn cluster swiftExprs add=swiftIdentifier
+
 
 " Keywords {{{2
 
@@ -89,6 +103,10 @@ syn keyword swiftKeyword new
 " Special types {{{3
 
 syn match swiftKeyword /\.\@1<=\%(Type\|Protocol\)\>/ display
+
+" }}}3
+
+syn cluster swiftExprs add=swiftKeyword
 
 " Built-in types {{{2
 " This is just the types that represent primitives or other commonly-used
@@ -144,6 +162,8 @@ syn keyword swiftType MirrorDisposition QuickLookObject
 syn keyword swiftType UnicodeDecodingResult
 syn keyword swiftType RawRepresentable
 
+syn cluster swiftExprs add=swiftType
+
 " Protocols {{{3
 
 syn keyword swiftProtocol Any AnyObject AnyClass
@@ -162,7 +182,12 @@ syn keyword swiftProtocol ExtensibleCollectionType
 syn keyword swiftProtocol MirrorType
 syn keyword swiftProtocol StringElementType
 
+syn cluster swiftExprs add=swiftProtocol
+
 " Literals {{{2
+
+syn cluster swiftLiteral contains=NONE
+syn cluster swiftExprs add=@swiftLiteral
 
 " Dec, Bin, Oct, Hex integer literals {{{3
 syn match swiftInteger display /\<\d[0-9_]*/
@@ -170,12 +195,16 @@ syn match swiftInteger display /\<0b[01][01_]*/
 syn match swiftInteger display /\<0o\o[0-7_]*/
 syn match swiftInteger display /\<0x\x[0-9a-fA-F_]*/
 
+syn cluster swiftLiteral add=swiftInteger
+
 " Float and hex float literals {{{3
 " NB: Swift's documentation allows a decimal integer literal to also match a
 " float literal. We don't want that here.
 syn match swiftFloat display /\<\d[0-9_]*\.\d[0-9_]*\%([eE][-+]\?\d[0-9_]*\)\?\>/
 syn match swiftFloat display /\<\d[0-9_]*\%(\.\d[0-9_]*\)\?[eE][-+]\?\d[0-9_]*\>/
 syn match swiftFloat display /\<0x\x[0-9a-fA-F_]*\%(\.\x[0-9a-fA-F_]*\)\?[pP][-+]\?\d[0-9_]*\>/
+
+syn cluster swiftLiteral add=swiftFloat
 
 " String literals {{{3
 
@@ -186,15 +215,21 @@ syn match swiftStringEscapeError display contained /\\\%(x\x\{,2}\|u\x\{,4}\|U\x
 syn region swiftStringEscape matchgroup=swiftStringEscapeUnicode start="\\u{" end=/}\|\ze"/ display contained contains=swiftStringEscapeUnicodeError keepend
 syn region swiftStringEscapeUnicodeError start=/\_X\|{\@1<=\x\{8}\zs\_[^}]/ end=/}/ display contained
 
-syn region swiftInterpolation matchgroup=swiftInterpolationDelim start=/\\(/ end=/)/ contained oneline contains=TOP
+syn region swiftInterpolation matchgroup=swiftInterpolationDelim start=/\\(/ end=/)/ contained oneline contains=@swiftDefs,@swiftItems,@swiftExprs
+
+syn cluster swiftLiteral add=swiftString
 
 " Boolean literals {{{3
 
 syn keyword swiftBoolean true false
 
+syn cluster swiftLiteral add=swiftBoolean
+
 " Nil literal {{{3
 
 syn keyword swiftNil nil
+
+syn cluster swiftLiteral add=swiftNil
 
 " Library values {{{2
 
@@ -202,30 +237,33 @@ syn match swiftLibraryValue /\.\@1<!\<\%(C_ARGC\|C_ARGV\|Process\)\>/
 
 syn match swiftLibraryEnumValue /\.\@1<=\%(Some\ze(\|None\>\)/
 
+syn cluster swiftExprs add=swiftLibraryValue,swiftLibraryEnumValue
+
 " Miscellaneous {{{2
 
 syn match swiftOperator display ,\%(//\|/\*\)\@![-/=+!*%<>&|^~.]\+, transparent contains=NONE
 
-syn region swiftBalancedParens matchgroup=swiftBalancedParens start="(" end=")" transparent contains=TOP,@swiftItems
+syn region swiftBalancedParens matchgroup=swiftBalancedParens start="(" end=")" transparent contains=@swiftExprs
 
 syn region swiftClosure matchgroup=swiftClosure start="{" end="}" contains=swiftClosureCaptureList,swiftClosureSimple fold
-syn region swiftClosureSimple start='[^}[:space:]]' end='\ze}' transparent contained contains=TOP,@swiftDefs
-syn region swiftClosureCaptureList start="\[" end="\]" contained contains=TOP,@swiftDefs nextgroup=swiftClosureSimple skipwhite skipempty
-syn match swiftClosureCaptureListOwnership /\<\%(strong\>\|weak\>\|unowned\%((safe)\|(unsafe)\|\>\)\)/ contained containedin=swiftClosureCaptureList
-syn match swiftPlaceholder /\$\d\+/ contained containedin=swiftClosureSimple
+syn region swiftClosureSimple start='[^}[:space:]]' end='\ze}' transparent contained contains=@swiftItems,@swiftExprs,swiftPlaceholder
+syn region swiftClosureCaptureList start="\[" end="\]" contained contains=@swiftItems,@swiftExprs,swiftClosureCaptureListOwnership nextgroup=swiftClosureSimple skipwhite skipempty
+syn match swiftClosureCaptureListOwnership /\<\%(strong\>\|weak\>\|unowned\%((safe)\|(unsafe)\|\>\)\)/ contained
+syn match swiftPlaceholder /\$\d\+/ contained
 
 syn match swiftAttribute /@\i\+/ nextgroup=swiftAttributeArguments skipwhite skipempty
-syn region swiftAttributeArguments matchgroup=swiftAttributeArguments start="(" end=")" contains=TOP,@swiftItems contained
-syn region swiftAttributeArgumentsNest matchgroup=swiftAttributeArguments start="(" end=")" transparent contained containedin=swiftAttributeArguments
-syn region swiftAttributeArgumentsNest matchgroup=swiftAttributeArguments start="\[" end="\]" transparent contained containedin=swiftAttributeArguments
+syn region swiftAttributeArguments matchgroup=swiftAttributeArguments start="(" end=")" contains=@swiftExprs,swiftAttributeArgumentsNest contained
+syn region swiftAttributeArgumentsNest matchgroup=swiftAttributeArguments start="(" end=")" transparent contained
+syn region swiftAttributeArgumentsNest matchgroup=swiftAttributeArguments start="\[" end="\]" transparent contained
+syn region swiftAttributeArgumentsNest matchgroup=swiftAttributeArguments start="{" end="}" transparent contained
 
-syn region swiftAttributeArgumentsNest matchgroup=swiftAttributeArguments start="{" end="}" transparent contained containedin=swiftAttributeArguments
+syn cluster swiftExprs add=swiftOperator,swiftBalancedParens,swiftClosure,swiftAttribute
 
 " Declarations {{{2
 
 " Types (struct/class/etc) {{{3
-syn region swiftTypeDef start=/\<\%(class\|struct\|enum\|protocol\|extension\)\>/ end=/\ze{/ end=/\ze;/ contains=TOP,@swiftItems nextgroup=swiftTypeBody keepend
-syn region swiftTypeBody matchgroup=swiftTypeBody start="{" end="}" contained contains=TOP fold
+syn region swiftTypeDef start=/\<\%(class\|struct\|enum\|protocol\|extension\)\>/ end=/\ze{/ end=/\ze;/ contains=@swiftExprs,swiftGenerics nextgroup=swiftTypeBody keepend
+syn region swiftTypeBody matchgroup=swiftTypeBody start="{" end="}" contained contains=@swiftDefs,@swiftItems,@swiftExprs fold
 syn cluster swiftDefs add=swiftTypeDef
 
 " Operators {{{3
@@ -240,24 +278,24 @@ syn cluster swiftDefs add=swiftOperatorDef
 
 " Functions {{{3
 
-syn match swiftFuncDef /\<func\>\_s*[^[:space:]();]\+\_s*\ze\%((\|<\)/ contains=TOP,@swiftItems nextgroup=swiftFuncArgs,swiftFuncGenerics
+syn match swiftFuncDef /\<func\>\_s*[^[:space:]();<]\+\_s*\ze\%((\|<\)/ contains=@swiftExprs nextgroup=swiftFuncArgs,swiftFuncGenerics
 syn match swiftSpecialFuncDef /\<\%(init\|deinit\)\>\_s*\ze(/ contains=swiftKeyword nextgroup=swiftFuncArgs
 syn region swiftFuncGenerics start="<" end="\ze\_." contained contains=swiftGenerics nextgroup=swiftFuncArgs skipwhite skipempty
-syn region swiftFuncArgs matchgroup=swiftFuncArgs start="(" end=")" contained contains=TOP,@swiftItems transparent nextgroup=swiftFuncBody skipwhite skipempty
-syn region swiftFuncBody matchgroup=swiftFuncBody start="{" end="}" contained contains=TOP,@swiftDefs fold
-syn keyword swiftFuncArgInout contained containedin=swiftFuncArgs inout
+syn region swiftFuncArgs matchgroup=swiftFuncArgs start="(" end=")" contained contains=@swiftExprs,swiftFuncArgInout transparent nextgroup=swiftFuncBody skipwhite skipempty
+syn region swiftFuncBody matchgroup=swiftFuncBody start="{" end="}" contained contains=@swiftItems,@swiftExprs fold
+syn keyword swiftFuncArgInout contained inout
 syn cluster swiftItems add=swiftFuncDef
 syn cluster swiftDefs add=swiftSpecialFuncDef
 
 " Subscripts {{{3
 
-syn match swiftSubscriptDef /\<subscript\>\_[^{]*\ze{/ contains=TOP,@swiftItems nextgroup=swiftSubscriptBody
-syn region swiftSubscriptBody matchgroup=swiftSubscriptBody start="{" end="}" fold contained contains=TOP,@swiftDefs
-syn keyword swiftSubscriptAttribute contained containedin=swiftSubscriptBody nextgroup=swiftSubscriptAttriuteBlock skipwhite skipempty get
-syn match swiftSubscriptAttribute /\<set\>/ contained containedin=swiftSubscriptBody nextgroup=swiftSubscriptAttributeArg,swiftSubscriptAttriuteBlock skipwhite skipempty
-syn match swiftSubscriptAttribute /\<\%(mutating\|nonmutating\)\>\ze\_s*\<\%(get\|set\)\>/ contained containedin=swiftSubscriptBody nextgroup=swiftSubscriptAttribute skipwhite skipempty
-syn region swiftSubscriptAttributeArg matchgroup=swiftSubscriptAttributeArg start="(" end=")" contained contains=TOP,@swiftItems nextgroup=swiftSubscriptAttributeBlock skipwhite skipempty
-syn region swiftSubscriptAttributeBlock matchgroup=swiftSubscriptAttributeBlock start="{" end="}" contained contains=TOP,@swiftDefs fold
+syn match swiftSubscriptDef /\<subscript\>\_[^{]*\ze{/ contains=@swiftExprs nextgroup=swiftSubscriptBody
+syn region swiftSubscriptBody matchgroup=swiftSubscriptBody start="{" end="}" fold contained contains=@swiftItems,@swiftExprs,swiftSubscriptAttribute
+syn keyword swiftSubscriptAttribute contained nextgroup=swiftSubscriptAttriuteBlock skipwhite skipempty get
+syn match swiftSubscriptAttribute /\<set\>/ contained nextgroup=swiftSubscriptAttributeArg,swiftSubscriptAttriuteBlock skipwhite skipempty
+syn match swiftSubscriptAttribute /\<\%(mutating\|nonmutating\)\>\ze\_s*\<\%(get\|set\)\>/ contained nextgroup=swiftSubscriptAttribute skipwhite skipempty
+syn region swiftSubscriptAttributeArg matchgroup=swiftSubscriptAttributeArg start="(" end=")" contained contains=@swiftExprs nextgroup=swiftSubscriptAttributeBlock skipwhite skipempty
+syn region swiftSubscriptAttributeBlock matchgroup=swiftSubscriptAttributeBlock start="{" end="}" contained contains=@swiftItems,@swiftExprs fold
 syn cluster swiftDefs add=swiftSubscriptDef
 
 " Variables {{{3
@@ -265,21 +303,21 @@ syn cluster swiftDefs add=swiftSubscriptDef
 syn match swiftVarDef /\<var\>\_s*\%([^[:space:][:punct:][:cntrl:][:digit:]]\|\i\)\%([^[:space:][:punct:][:cntrl:]]\|\i\)*/ contains=swiftKeyword,swiftIdentifier nextgroup=swiftVarTypeAscription,swiftVarBody skipwhite skipempty
 syn match swiftVarTypeAscription /:/ contained nextgroup=swiftVarType skipwhite skipempty
 syn region swiftVarType start=/./ end=/\ze\_./ contained contains=swiftTypeExpr nextgroup=swiftVarBody skipwhite skipempty
-syn region swiftVarBody matchgroup=swiftVarBody start="{" end="}" fold contained contains=TOP,@swiftDefs
-syn keyword swiftVarAttribute contained containedin=swiftVarBody nextgroup=swiftVarAttributeBlock skipwhite skipempty get
-syn match swiftVarAttribute /\<\%(set\|willSet\|didSet\)\>/ contained containedin=swiftVarBody nextgroup=swiftVarAttributeArg,swiftVarAttributeBlock skipwhite skipempty
-syn match swiftVarAttribute /\<\%(mutating\|nonmutating\)\>\ze\_s*\<\%(get\|set\|willSet\|didSet\)\>/ contained containedin=swiftVarBody nextgroup=swiftVarAttribute skipwhite skipempty
-syn region swiftVarAttributeArg matchgroup=swiftVarAttributeArg start="(" end=")" contained contains=TOP,@swiftItems nextgroup=swiftVarAttributeBlock skipwhite skipempty
-syn region swiftVarAttributeBlock matchgroup=swiftVarAttributeBlock start="{" end="}" contained contains=TOP,@swiftDefs fold
+syn region swiftVarBody matchgroup=swiftVarBody start="{" end="}" fold contained contains=@swiftItems,@swiftExprs,swiftVarAttribute
+syn keyword swiftVarAttribute contained nextgroup=swiftVarAttributeBlock skipwhite skipempty get
+syn match swiftVarAttribute /\<\%(set\|willSet\|didSet\)\>/ contained nextgroup=swiftVarAttributeArg,swiftVarAttributeBlock skipwhite skipempty
+syn match swiftVarAttribute /\<\%(mutating\|nonmutating\)\>\ze\_s*\<\%(get\|set\|willSet\|didSet\)\>/ contained nextgroup=swiftVarAttribute skipwhite skipempty
+syn region swiftVarAttributeArg matchgroup=swiftVarAttributeArg start="(" end=")" contained contains=@swiftExprs nextgroup=swiftVarAttributeBlock skipwhite skipempty
+syn region swiftVarAttributeBlock matchgroup=swiftVarAttributeBlock start="{" end="}" contained contains=@swiftItems,@swiftExprs fold
 syn cluster swiftItems add=swiftVarDef
 
 " Type patterns {{{3
 
-syn region swiftTypeExpr start=/./ end=/\ze\_[[:space:]{})\]]/ contained contains=TOP,@swiftItems skipwhite skipempty
-syn region swiftTypeArrayDict matchgroup=swiftTypeBrackets start='\[' end='\]' contained contains=TOP,@swiftItems containedin=swiftTypeExpr,swiftTypeArrayDict,swiftGenerics keepend extend
-syn match swiftTypeBracketsColon /:/ contained containedin=swiftTypeArrayDict
-syn region swiftGenerics matchgroup=swiftGenerics start=/</ end=/>/ contained contains=TOP,@swiftItems,swiftOperator containedin=swiftTypeDef,swiftTypeExpr,swiftGenerics keepend extend
-syn match swiftGenericsEqual /==/ contained containedin=swiftGenerics transparent contains=NONE
+syn region swiftTypeExpr start=/./ end=/\ze\_[[:space:]{})\]]/ contained contains=@swiftExprs,swiftTypeArrayDict,swiftGenerics skipwhite skipempty
+syn region swiftTypeArrayDict matchgroup=swiftTypeBrackets start='\[' end='\]' contained contains=@swiftExprs,swiftTypeArrayDict,swiftTypeBracketsColon keepend extend
+syn match swiftTypeBracketsColon /:/ contained
+syn region swiftGenerics matchgroup=swiftGenerics start=/</ end=/>/ contained contains=swiftKeyword,swiftType,swiftProtocol,@swiftLiteral,swiftIdentifier,swiftBalancedParens,swiftTypeArrayDict,swiftGenerics,swiftGenericsEqual keepend extend
+syn match swiftGenericsEqual /==/ contained transparent contains=NONE
 
 " Modifiers {{{3
 
@@ -306,6 +344,8 @@ syn region swiftCommentLineMark excludenl start=/MARK:/ end=/$/ contained contai
 syn cluster swiftCommentLineMarker contains=swiftCommentTodo,swiftCommentLineMark
 syn region swiftCommentBlockMark excludenl start=/MARK:/ end=/$/ end=,\ze/\*, contained contains=@Spell oneline
 syn cluster swiftCommentBlockMarker contains=swiftCommentTodo,swiftCommentBlockMark
+
+syn cluster swiftExprs add=swiftCommentLine,swiftCommentBlock,swiftDocCommentLine,swiftDocCommentBlock
 
 " Default highlighting {{{1
 
