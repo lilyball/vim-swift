@@ -52,9 +52,59 @@ COMMANDS                                                      *swift-commands*
 		The arguments given to |:SwiftRun| will be passed to the
 		compiled binary.
 
-		If ! is specified, the arguments are passed to the swift
-		compiler instead. A "--" argument will separate the compiler
-		arguments from the arguments passed to the binary.
+		If ! is specified, the arguments are passed to swiftc instead.
+		A "--" argument will separate the compiler arguments from the
+		arguments passed to the binary.
+
+:SwiftEmitIr [args]                                             *:SwiftEmitIr*
+		Compiles the current file to LLVM IR and displays the results
+		in a new split. If the current file has unsaved changes, it
+		will be saved first using |:update|. If the current file is an
+		unnamed buffer, it will be written to a temporary file first.
+
+		The arguments given to |:SwiftEmitIr| will be passed to
+		swiftc.
+
+:TabSwiftEmitIr [args]                                       *:TabSwiftEmitIr*
+		Same as |:SwiftEmitIr| but the results are displayed in a new
+		tab instead.
+		{not available when the |+windows| feature was disabled at
+		compile time}
+
+:SwiftEmitSil  [args]                                          *:SwiftEmitSil*
+:SwiftEmitSil! [args]
+		Compiles the current file to SIL and displays the results in a
+		new split. If the current file has unsaved changes, it will be
+		saved first using |:update|. If the current file is an unnamed
+		buffer, it will be written to a temporary file first.
+
+		The arguments given to |:SwiftEmitSil| will be passed to
+		swiftc.
+
+		If ! is specified, raw SIL will be emitted instead of
+		canonical SIL.
+
+:TabSwiftEmitSil  [args]                                    *:TabSwiftEmitSil*
+:TabSwiftEmitSil! [args]
+		Same as |:SwiftEmitSil| but the results are displayed in a new
+		tab instead.
+		{not available when the |+windows| feature was disabled at
+		compile time}
+
+:SwiftEmitAsm [args]                                           *:SwiftEmitAsm*
+		Compiles the current file to assembly and displays the results
+		in a new split. If the current file has unsaved changes, it
+		will be saved first using |:update|. If the current file is an
+		unnamed buffer, it will be written to a temporary file first.
+
+		The arguments given to |:SwiftEmitAsm| will be passed to
+		swiftc.
+
+:TabSwiftEmitAsm [args]                                     *:TabSwiftEmitAsm*
+		Same as |:SwiftEmitAsm| but the results are displayed in a new
+		tab instead.
+		{not available when the |+windows| feature was disabled at
+		compile time}
 
 ==============================================================================
 MAPPINGS                                                      *swift-mappings*

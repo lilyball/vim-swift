@@ -56,6 +56,23 @@ unlet s:conceal
 " See |:SwiftRun| for docs
 command! -nargs=* -complete=file -buffer -bang SwiftRun call swift#Run(<bang>0, <q-args>)
 
+" See |:SwiftEmitIr| for docs
+command! -nargs=* -buffer SwiftEmitIr call swift#Emit(0, "ir", 0, <q-args>)
+
+" See |:SwiftEmitSil| for docs
+command! -nargs=* -buffer -bang SwiftEmitSil call swift#Emit(0, "sil", <bang>0, <q-args>)
+
+" See |:SwiftEmitAsm| for docs
+command! -nargs=* -buffer SwiftEmitAsm call swift#Emit(0, "assembly", 0, <q-args>)
+
+" Tab command variants {{{2
+
+if has("windows")
+    command! -nargs=* -buffer TabSwiftEmitIr call swift#Emit(1, "ir", 0, <q-args>)
+    command! -nargs=* -buffer -bang TabSwiftEmitSil call swift#Emit(1, "sil", <bang>0, <q-args>)
+    command! -nargs=* -buffer TabSwiftEmitAsm call swift#Emit(1, "assembly", 0, <q-args>)
+endif
+
 " Mappings {{{1
 
 " Map ⌘R in MacVim to :SwiftRun
@@ -111,7 +128,14 @@ let b:undo_ftplugin = "
                 \|unlet b:swift__did_set_conceallevel
             \|endif
             \|delcommand SwiftRun
-            \|unlet! b:swift_last_swift_args b:swift_last_args
+            \|delcommand SwiftEmitIr
+            \|delcommand SwiftEmitSil
+            \|delcommand SwiftEmitAsm
+            \|if has('windows')
+                \|delcommand TabSwiftEmitIr
+                \|delcommand TabSwiftEmitSil
+                \|delcommand TabSwiftEmitAsm
+            \|endif
             \|nunmap <buffer> <D-r>
             \|nunmap <buffer> <D-R>
             \|unlet! b:swift_last_args b:swift_last_swift_args

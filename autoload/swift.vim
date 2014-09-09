@@ -54,6 +54,53 @@ function! s:Run(path, swift_args, args)
 	endtry
 endfunction
 
+" Emit {{{1
+
+function! swift#Emit(tab, type, bang, args)
+	let args = s:ShellTokenize(a:args)
+	let type = a:type
+	if a:type ==# 'sil' && a:bang
+		let type = 'silgen'
+	endif
+	call s:WithPath(function("s:Emit"), a:tab, type, args)
+endfunction
+
+function! s:Emit(path, tab, type, args)
+	try
+		let sdk = system('xcrun -show-sdk-path -sdk macosx')[:-2]
+		let args = ['-sdk', sdk, '-emit-'.a:type, '-o', '-'] + a:args + ['--', a:path]
+
+		let swift = 'xcrun swiftc'
+
+		let output = system(swift . " " . join(args))
+		if v:shell_error
+			echohl WarningMessage
+			echo output
+			echohl None
+		else
+			if a:tab
+				tabnew
+			else
+				new
+			endif
+			silent put =output
+			1
+			d
+			if a:type == 'ir'
+				setl filetype=llvm
+			elseif a:type == 'assembly'
+				setl filetype=asm
+			elseif a:type == 'sil' || a:type == 'silgen'
+				" we don't have a SIL filetype yet
+				setl filetype=
+			endif
+			setl buftype=nofile
+			setl bufhidden=hide
+			setl noswapfile
+		endif
+	endtry
+endfunction
+
 " Utility functions {{{1
 
 function! s:WithPath(func, ...)
