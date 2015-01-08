@@ -33,7 +33,7 @@ function! s:Run(path, swift_args, args)
 			let exepath .= '.exe'
 		endif
 
-		let sdk = system('xcrun -show-sdk-path -sdk macosx')[:-2]
+		let sdk = s:SDKPath()
 		let swift_args = ['-sdk', sdk, a:path, '-o', exepath] + a:swift_args
 
 		let swift = 'xcrun swiftc'
@@ -67,7 +67,7 @@ endfunction
 
 function! s:Emit(path, tab, type, args)
 	try
-		let sdk = system('xcrun -show-sdk-path -sdk macosx')[:-2]
+		let sdk = s:SDKPath()
 		let args = ['-sdk', sdk, '-emit-'.a:type, '-o', '-'] + a:args + ['--', a:path]
 
 		let swift = 'xcrun swiftc'
@@ -102,6 +102,14 @@ function! s:Emit(path, tab, type, args)
 endfunction
 
 " Utility functions {{{1
+
+function! s:SDKPath()
+	let sdk = system('xcrun -show-sdk-path -sdk macosx')
+	if sdk =~ '\n'
+		let sdk = sdk[:-2]
+	endif
+	return sdk
+endfunction
 
 function! s:WithPath(func, ...)
 	try
