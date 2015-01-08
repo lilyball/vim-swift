@@ -106,6 +106,20 @@ COMMANDS                                                      *swift-commands*
 		{not available when the |+windows| feature was disabled at
 		compile time}
 
+:SwiftEmitHeader [args]                                     *:SwiftEmitHeader*
+		Compiles the current file and displays a synthesized Objective-C
+		header in a new split. The current file will always be written
+		to a temporary buffer first.
+
+		The arguments given to |:SwiftEmitHeader| will be passed to
+		swiftc.
+
+:TabSwiftEmitHeader [args]                                 *:TabSwiftEmitHeader*
+		Same as |:SwiftEmitHeader| but the results are displayed in a
+		new tab instead.
+		{not available when the |+windows| feature was disabled at
+		compile time}
+
 ==============================================================================
 MAPPINGS                                                      *swift-mappings*
 

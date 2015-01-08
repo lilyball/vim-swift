@@ -62,13 +62,34 @@ function! swift#Emit(tab, type, bang, args)
 	if type ==# 'sil' && a:bang
 		let type = 'silgen'
 	endif
-	call s:WithPath(function("s:Emit"), a:tab, type, args)
+	if type == 'objc-header'
+		" objc-header generation saves some secondary files
+		" so we should always use the temporary directory
+		let save_write = &write
+		set nowrite
+	endif
+	try
+		call s:WithPath(function("s:Emit"), a:tab, type, args)
+	finally
+		if exists("save_write") | let &write = save_write | endif
+	endtry
 endfunction
 
 function! s:Emit(path, tab, type, args)
 	try
 		let sdk = s:SDKPath()
-		let args = ['-sdk', sdk, '-emit-'.a:type, '-o', '-'] + a:args + ['--', a:path]
+		let args = ['-sdk', sdk]
+		if a:type == 'objc-header'
+			" emitting the objc-header is a bit complicated
+			let args += ['-emit-objc-header-path', '-', '-parse-as-library', '-emit-module']
+			" for some reason, even after all that, we still need to import an
+			" obj-c header before it will emit anything useful.
+			let args += ['-import-objc-header', '/dev/null']
+		else
+			let args += ['-emit-'.a:type, '-o', '-']
+		endif
+		let args += a:args
+		let args += ['--', a:path]
 
 		let swift = 'xcrun swiftc'
 
@@ -93,6 +114,8 @@ function! s:Emit(path, tab, type, args)
 			elseif a:type == 'sil' || a:type == 'silgen'
 				" we don't have a SIL filetype yet
 				setl filetype=
+			elseif a:type == 'objc-header'
+				setl filetype=objc
 			endif
 			setl buftype=nofile
 			setl bufhidden=hide

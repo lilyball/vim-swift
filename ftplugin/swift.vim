@@ -65,12 +65,16 @@ command! -nargs=* -buffer -bang SwiftEmitSil call swift#Emit(0, "sil", <bang>0, 
 " See |:SwiftEmitAsm| for docs
 command! -nargs=* -buffer SwiftEmitAsm call swift#Emit(0, "assembly", 0, <q-args>)
 
+" See |:SwiftEmitObjcHeader| for docs
+command! -nargs=* -buffer SwiftEmitHeader call swift#Emit(0, "objc-header", 0, <q-args>)
+
 " Tab command variants {{{2
 
 if has("windows")
     command! -nargs=* -buffer TabSwiftEmitIr call swift#Emit(1, "ir", 0, <q-args>)
     command! -nargs=* -buffer -bang TabSwiftEmitSil call swift#Emit(1, "sil", <bang>0, <q-args>)
     command! -nargs=* -buffer TabSwiftEmitAsm call swift#Emit(1, "assembly", 0, <q-args>)
+    command! -nargs=* -buffer TabSwiftEmitHeader call swift#Emit(1, "objc-header", 0, <q-args>)
 endif
 
 " Mappings {{{1
@@ -131,10 +135,12 @@ let b:undo_ftplugin = "
             \|delcommand SwiftEmitIr
             \|delcommand SwiftEmitSil
             \|delcommand SwiftEmitAsm
+            \|delcommand SwiftEmitHeader
             \|if has('windows')
                 \|delcommand TabSwiftEmitIr
                 \|delcommand TabSwiftEmitSil
                 \|delcommand TabSwiftEmitAsm
+                \|delcommand TabSwiftEmitHeader
             \|endif
             \|nunmap <buffer> <D-r>
             \|nunmap <buffer> <D-R>
