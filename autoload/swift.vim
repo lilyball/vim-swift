@@ -59,7 +59,7 @@ endfunction
 function! swift#Emit(tab, type, bang, args)
 	let args = s:ShellTokenize(a:args)
 	let type = a:type
-	if a:type ==# 'sil' && a:bang
+	if type ==# 'sil' && a:bang
 		let type = 'silgen'
 	endif
 	call s:WithPath(function("s:Emit"), a:tab, type, args)
@@ -126,7 +126,12 @@ function! s:WithPath(func, ...)
 			let save_cwd = getcwd()
 			silent exe 'lcd' fnameescape(tmpdir)
 
-			let path = 'unnamed.swift'
+			" if we're doing this because of nowrite, preserve the filename
+			if !empty(path)
+				let path = expand('%:t:r').".swift"
+			else
+				let path = 'unnamed.swift'
+			endif
 
 			let save_mod = &mod
 			set nomod
