@@ -1,7 +1,7 @@
 " File: autoload/swift.vim
 " Author: Kevin Ballard
 " Description: Helper functions for Swift
-" Last Change: Aug 04, 2014
+" Last Change: Jan 08, 2015
 
 " Run {{{1
 
@@ -33,7 +33,7 @@ function! s:Run(path, swift_args, args)
 			let exepath .= '.exe'
 		endif
 
-		let platform = s:GetPlatform()
+		let platform = swift#platform#detect().platform
 		let sdk = s:SDKPath(platform)
 		let swift_args = ['-sdk', sdk, a:path, '-o', exepath] + a:swift_args
 
@@ -78,7 +78,7 @@ endfunction
 
 function! s:Emit(path, tab, type, args)
 	try
-		let platform = s:GetPlatform()
+		let platform = swift#platform#detect().platform
 		let sdk = s:SDKPath(platform)
 		let args = ['-sdk', sdk]
 		if a:type == 'objc-header'
@@ -124,54 +124,6 @@ function! s:Emit(path, tab, type, args)
 			setl noswapfile
 		endif
 	endtry
-endfunction
-
-" iOS Support {{{1
-
-function! s:GetPlatform()
-	for scope in [b:, w:, g:]
-		let platform = get(scope, "swift_platform", "")
-		if type(platform) != type("") | continue | endif
-		if platform =~? '^i\%(phone\%(os\|sim\%(ulator\)\?\)\?\|pad\|os\)$'
-			return 'iphonesimulator'
-		elseif platform =~? '^\%(mac\)\?osx'
-			return 'macosx'
-		endif
-	endfor
-	" try auto-detecting an import of UIKit, Cocoa, or AppKit
-	let limit = 128
-	for scope in [b:, w:, g:]
-		let value = get(scope, "swift_platform_detect_limit", "")
-		if type(value) == type(0)
-			let limit = value
-			break
-		endif
-	endfor
-	let commentnest = 0
-	for line in getline(1,limit)
-		if commentnest == 0
-			if line =~ '^\s*import\s\+UIKit\>'
-				return 'iphonesimulator'
-			elseif line =~ '^\s*import\s\+\%(AppKit\|Cocoa\)\>'
-				return 'macosx'
-			endif
-		endif
-		let start = 0
-		while 1
-			let start = match(line, '/\*\|\*/', start)
-			if start < 0 | break | endif
-			if line[start:start+1] == '/*'
-				let commentnest+=1
-			elseif commentnest > 0
-				let commentnest-=1
-			else
-				" invalid syntax, cancel the whole line
-				break
-			endif
-		endwhile
-	endfor
-	" auto-detect failed. Assume macosx
-	return 'macosx'
 endfunction
 
 " Utility functions {{{1
