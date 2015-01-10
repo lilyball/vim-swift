@@ -49,7 +49,8 @@ function! s:Run(path, swift_args, args)
 			echohl None
 		endif
 		if !v:shell_error
-			exe '!' . shellescape(exepath) . " " . join(a:args)
+			let path = swift#platform#commandStringForExecutable(exepath, platformInfo)
+			exe '!' . path . ' ' . join(a:args)
 		endif
 	finally
 		if exists("exepath")

@@ -280,6 +280,21 @@ function! swift#platform#sdkPath(sdkname)
     return sdk
 endfunction
 
+" Arguments:
+"   {exepath} - Path to an executable
+"   {platformInfo} - Platform info
+" Returns:
+"   A string that can be passed to ! to execute the binary.
+function! swift#platform#commandStringForExecutable(exepath, platformInfo)
+    if a:platformInfo.platform ==# 'iphonesimulator'
+        let path = 'xcrun simctl spawn '
+        let path .= shellescape(a:platformInfo.deviceInfo.uuid)
+        return path.' '.shellescape(a:exepath)
+    else
+        return shellescape(a:exepath)
+    endif
+endfunction
+
 " We can't easily test what architectures a device supports
 " so we're just blacklisting the known 32-bit devices.
 let swift#platform#32bitDevices = [
