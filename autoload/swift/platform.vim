@@ -209,6 +209,86 @@ function! swift#platform#simDeviceInfo()
     return devices
 endfunction
 
+" Arguments:
+"   {platform} - A platform dictionary as returned by swift#platform#detect()
+" Returns:
+"   A copy of {platform} augmented with a 'deviceInfo' key if relevant,
+"   or {} if an error occurred (the error will be echoed).
+function! swift#platform#getPlatformInfo(platform)
+    if a:platform.platform == 'macosx'
+        return copy(a:platform)
+    elseif a:platform.platform == 'iphonesimulator'
+        if empty(get(a:platform, 'device', {}))
+            echohl Error
+            echom "swift: No device specified for platform iphonesimulator"
+            echohl Normal
+            echom "Please set b:swift_device or g:swift_device and try again."
+            return []
+        endif
+        let allDeviceInfo = swift#platform#simDeviceInfo()
+        if empty(allDeviceInfo)
+            return []
+        endif
+        let deviceInfo={}
+        let found=0
+        for deviceInfo in allDeviceInfo
+            if deviceInfo.name ==? a:platform.device
+                let found=1
+                break
+            endif
+        endfor
+        if !found
+            echohl Error
+            echom "swift: Device '".a:platform.device."' does not exist."
+            echohl Normal
+            return []
+        endif
+        return extend(copy(a:platform), {'deviceInfo': deviceInfo})
+    else
+        throw "swift: unexpected platform ".a:platform.platform
+    endif
+endfunction
+
+" Arguments:
+"   {platform} - A platform info dictionary as returned by
+"                swift#platform#getPlatformInfo()
+" Returns:
+"   A List of arguments to be passed to swiftc. If the device is invalid
+"   or another error occurred, an error is echoed and [] is returned.
+function! swift#platform#argsForPlatformInfo(platformInfo)
+    if a:platformInfo.platform == 'macosx'
+        return ['-sdk', swift#platform#sdkPath(a:platformInfo.platform)]
+    elseif a:platformInfo.platform == 'iphonesimulator'
+        let deviceInfo = a:platformInfo.deviceInfo
+        if index(g:swift#platform#32bitDevices, deviceInfo.type) >= 0
+            let arch = 'i386'
+        else
+            let arch = 'x86_64'
+        endif
+        let target = arch.'-apple-ios'.deviceInfo.runtime.version
+        return ['-sdk', swift#platform#sdkPath(a:platformInfo.platform), '-target', target]
+    else
+        throw "swift: unexpected platform ".a:platformInfo.platform
+    endif
+endfunction
+
+function! swift#platform#sdkPath(sdkname)
+    let sdk = system('xcrun -show-sdk-path -sdk ' . a:sdkname)
+    if sdk =~ '\n'
+        let sdk = sdk[:-2]
+    endif
+    return sdk
+endfunction
+
+" We can't easily test what architectures a device supports
+" so we're just blacklisting the known 32-bit devices.
+let swift#platform#32bitDevices = [
+            \ 'com.apple.CoreSimulator.SimDeviceType.iPhone-4s',
+            \ 'com.apple.CoreSimulator.SimDeviceType.iPhone-5',
+            \ 'com.apple.CoreSimulator.SimDeviceType.iPad-2',
+            \ 'com.apple.CoreSimulator.SimDeviceType.iPad-Retina'
+            \]
+
 if !exists('*vimproc#version')
     try
         call vimproc#version()

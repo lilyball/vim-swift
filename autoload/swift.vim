@@ -33,9 +33,12 @@ function! s:Run(path, swift_args, args)
 			let exepath .= '.exe'
 		endif
 
-		let platform = swift#platform#detect().platform
-		let sdk = s:SDKPath(platform)
-		let swift_args = ['-sdk', sdk, a:path, '-o', exepath] + a:swift_args
+		let platformInfo = swift#platform#getPlatformInfo(swift#platform#detect())
+		if empty(platformInfo)
+			return
+		endif
+		let swift_args = swift#platform#argsForPlatformInfo(platformInfo)
+		let swift_args += [a:path, '-o', exepath] + a:swift_args
 
 		let swift = 'xcrun swiftc'
 
@@ -78,9 +81,11 @@ endfunction
 
 function! s:Emit(path, tab, type, args)
 	try
-		let platform = swift#platform#detect().platform
-		let sdk = s:SDKPath(platform)
-		let args = ['-sdk', sdk]
+		let platformInfo = swift#platform#getPlatformInfo(swift#platform#detect())
+		if empty(platformInfo)
+			return
+		endif
+		let args = swift#platform#argsForPlatformInfo(platformInfo)
 		if a:type == 'objc-header'
 			" emitting the objc-header is a bit complicated
 			let args += ['-emit-objc-header-path', '-', '-parse-as-library', '-emit-module']
