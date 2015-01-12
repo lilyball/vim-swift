@@ -1,7 +1,7 @@
 " File: autoload/swift.vim
 " Author: Kevin Ballard
 " Description: Helper functions for Swift
-" Last Change: Aug 04, 2014
+" Last Change: Jan 08, 2015
 
 " Run {{{1
 
@@ -33,8 +33,12 @@ function! s:Run(path, swift_args, args)
 			let exepath .= '.exe'
 		endif
 
-		let sdk = s:SDKPath()
-		let swift_args = ['-sdk', sdk, a:path, '-o', exepath] + a:swift_args
+		let platformInfo = swift#platform#getPlatformInfo(swift#platform#detect())
+		if empty(platformInfo)
+			return
+		endif
+		let swift_args = swift#platform#argsForPlatformInfo(platformInfo)
+		let swift_args += [a:path, '-o', exepath] + a:swift_args
 
 		let swift = 'xcrun swiftc'
 
@@ -45,7 +49,8 @@ function! s:Run(path, swift_args, args)
 			echohl None
 		endif
 		if !v:shell_error
-			exe '!' . shellescape(exepath) . " " . join(a:args)
+			let path = swift#platform#commandStringForExecutable(exepath, platformInfo)
+			exe '!' . path . ' ' . join(a:args)
 		endif
 	finally
 		if exists("exepath")
@@ -77,8 +82,11 @@ endfunction
 
 function! s:Emit(path, tab, type, args)
 	try
-		let sdk = s:SDKPath()
-		let args = ['-sdk', sdk]
+		let platformInfo = swift#platform#getPlatformInfo(swift#platform#detect())
+		if empty(platformInfo)
+			return
+		endif
+		let args = swift#platform#argsForPlatformInfo(platformInfo)
 		if a:type == 'objc-header'
 			" emitting the objc-header is a bit complicated
 			let args += ['-emit-objc-header-path', '-', '-parse-as-library', '-emit-module']
@@ -126,8 +134,8 @@ endfunction
 
 " Utility functions {{{1
 
-function! s:SDKPath()
-	let sdk = system('xcrun -show-sdk-path -sdk macosx')
+function! s:SDKPath(platform)
+	let sdk = system('xcrun -show-sdk-path -sdk ' . a:platform)
 	if sdk =~ '\n'
 		let sdk = sdk[:-2]
 	endif
