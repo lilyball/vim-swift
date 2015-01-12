@@ -22,12 +22,14 @@ behavior of the plugin.
 
                                                           *g:swift_no_conceal*
 g:swift_no_conceal~
+	Type: Number
 	Set this option to turn off |conceal| support: >
 	    let g:swift_no_conceal = 1
 <
 
                                                              *g:swift_no_fold*
 g:swift_no_fold~
+	Type: Number
 	Set this option to turn off |folding|: >
 	    let g:swift_no_fold = 1
 <
@@ -37,6 +39,56 @@ g:swift_no_fold~
 			value (all folds are closed by default).
 	2		Folding is not enabled. 'foldmethod' and 'foldlevel'
 			are both left at their current values.
+
+                                                            *g:swift_platform*
+g:swift_platform~
+	Type: String
+	Set this option to the platform to compile the code for.
+	Possible values are "macosx" and "iphoneos": >
+	    let g:swift_platform = 'macosx'
+<
+	This option may also be specified as *w:swift_platform* or
+	*b:swift_platform*
+
+	If *b:swift_platform* is unset, this option can be inferred from a
+	comment in the file of the form: >
+	    // swift: platform=iphoneos
+<
+	If unset, and if no comment is found as described above, if the file
+	includes an import for the 'UIKit' framework it is assumed to be
+	"iphoneos", and if the file includes an import for the 'AppKit' or
+	'Cocoa' frameworks it is assumed to be "macosx".
+
+	If no value is set or inferred, it defaults to "macosx".
+
+                                                              *g:swift_device*
+g:swift_device~
+	Type: String
+	The name of the configured iOS Simulator device to use when running
+	code for the "iphoneos" platform: >
+	    let g:swift_device = 'iPhone 6'
+<
+	This option can also be specified as *w:swift_device* or
+	*b:swift_device*
+
+	Like |g:swift_platform|, this option can be inferred from a comment of
+	the form: >
+	    // swift: device=iPhone 6
+<
+	If unset, attempting to run code for the "iphoneos" platform will
+	fail.
+
+                                               *g:swift_platform_detect_limit*
+g:swift_platform_detect_limit~
+	Type: Number
+	This option defines the number of lines that are scanned in order to
+	detect the platform if |g:swift_platform| is unset: >
+	    let g:swift_platform_detect_limit = 20
+<
+	This option can also be specified as *w:swift_platform_detect_limit*
+	or *b:swift_platform_detect_limit*
+
+	The default value is 128.
 
 ==============================================================================
 COMMANDS                                                      *swift-commands*
