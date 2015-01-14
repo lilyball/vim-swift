@@ -7,6 +7,7 @@ CONTENTS                                                    *swift* *ft-swift*
 2. Settings                                                   |swift-settings|
 3. Commands                                                   |swift-commands|
 4. Mappings                                                   |swift-mappings|
+5. Unite Sources                                         |swift-unite-sources|
 
 ==============================================================================
 INTRODUCTION                                                     *swift-intro*
@@ -184,6 +185,18 @@ MAPPINGS                                                      *swift-mappings*
 			arguments given to the last invocation, but does not
 			execute it.
 			Note: This binding is only available in MacVim.
+
+==============================================================================
+UNITE SOURCES                                            *swift-unite-sources*
+
+If you have |unite| installed, a source is provided for picking the iOS
+Simulator device to use.
+
+|unite|: http://github.com/Shougo/unite.vim
+
+swift/device                                 *swift-unite-source-swift-device*
+		Candidates are all available iOS Simulator devices. The
+		default action is to set |g:swift_device|.
 
 ==============================================================================
  vim:tw=78:sw=4:noet:ts=8:ft=help:norl:
