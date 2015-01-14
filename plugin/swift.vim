@@ -12,9 +12,9 @@ let s:save_cpo = &cpo
 set cpo&vim
 
 if exists("g:syntastic_extra_filetypes")
-    let g:syntastic_extra_filetypes += ['rust']
+    let g:syntastic_extra_filetypes += ['swift']
 else
-    let g:syntastic_extra_filetypes = ['rust']
+    let g:syntastic_extra_filetypes = ['swift']
 endif
 
 let &cpo = s:save_cpo
