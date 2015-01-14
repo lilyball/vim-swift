@@ -125,9 +125,10 @@ endfunction
 function! swift#platform#simDeviceInfo()
     let output = s:system('xcrun simctl list')
     if output.status
-        echohl Error
+        redraw
+        echohl ErrorMsg
         echom "Error: Shell command `xcrun simctl list` failed with error:"
-        echohl Normal
+        echohl None
         if has_key(output, 'stderr')
             for line in output.stderr
                 echom line
@@ -196,9 +197,10 @@ function! swift#platform#simDeviceInfo()
             let state = -1
         endif
         if state == -1
-            echohl Error
+            redraw
+            echohl ErrorMsg
             echom "Error: Unexpected output from shell command `xcrun simctl list`"
-            echohl Normal
+            echohl None
             return {}
         endif
     endfor
@@ -219,10 +221,11 @@ function! swift#platform#getPlatformInfo(platform)
         return copy(a:platform)
     elseif a:platform.platform == 'iphonesimulator'
         if empty(get(a:platform, 'device', {}))
-            echohl Error
-            echom "swift: No device specified for platform iphonesimulator"
-            echohl Normal
-            echom "Please set b:swift_device or g:swift_device and try again."
+            redraw
+            echohl ErrorMsg
+            echom "Error: No device specified for platform iphonesimulator"
+            echohl None
+            echo "Please set b:swift_device or g:swift_device and try again."
             return []
         endif
         let allDeviceInfo = swift#platform#simDeviceInfo()
@@ -238,9 +241,10 @@ function! swift#platform#getPlatformInfo(platform)
             endif
         endfor
         if !found
-            echohl Error
-            echom "swift: Device '".a:platform.device."' does not exist."
-            echohl Normal
+            redraw
+            echohl ErrorMsg
+            echom "Error: Device '".a:platform.device."' does not exist."
+            echohl None
             return []
         endif
         return extend(copy(a:platform), {'deviceInfo': deviceInfo})
