@@ -131,18 +131,16 @@ function! s:Emit(dict, tab, type, args)
 			setl bufhidden=hide
 			setl noswapfile
 			if exists('l:extension')
-				let suffix=''
+				let suffix=1
 				while 1
-					let bufname = empty(suffix) ? basename : basename.'.'.suffix
-					try
-						exe 'file' fnameescape(bufname.'.'.extension)
-					catch /^Vim(file):E95:/
+					let bufname = basename
+					if suffix > 1 | let bufname .= ' ('.suffix.')' | endif
+					let bufname .= '.'.extension
+					if bufexists(bufname)
 						let suffix += 1
-						if suffix > 1000
-							throw 'Too many failed buffer renames'
-						endif
 						continue
-					endtry
+					endif
+					exe 'silent noautocmd keepalt file' fnameescape(bufname)
 					break
 				endwhile
 			endif
