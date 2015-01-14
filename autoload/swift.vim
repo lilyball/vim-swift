@@ -26,37 +26,31 @@ function! swift#Run(bang, args)
 	call s:WithPath(function("s:Run"), swift_args, args)
 endfunction
 
-function! s:Run(path, swift_args, args)
-	try
-		let exepath = tempname()
-		if has('win32')
-			let exepath .= '.exe'
-		endif
+function! s:Run(dict, swift_args, args)
+	let exepath = a:dict.tmpdir.'/'.fnamemodify(a:dict.path, ':t:r')
+	if has('win32')
+		let exepath .= '.exe'
+	endif
 
-		let platformInfo = swift#platform#getPlatformInfo(swift#platform#detect())
-		if empty(platformInfo)
-			return
-		endif
-		let swift_args = swift#platform#argsForPlatformInfo(platformInfo)
-		let swift_args += [a:path, '-o', exepath] + a:swift_args
+	let platformInfo = swift#platform#getPlatformInfo(swift#platform#detect())
+	if empty(platformInfo)
+		return
+	endif
+	let swift_args = swift#platform#argsForPlatformInfo(platformInfo)
+	let swift_args += [a:dict.path, '-o', exepath] + a:swift_args
 
-		let swift = 'xcrun swiftc'
+	let swift = 'xcrun swiftc'
 
-		let output = system(swift . " " . join(swift_args))
-		if output != ''
-			echohl WarningMsg
-			echo output
-			echohl None
-		endif
-		if !v:shell_error
-			let path = swift#platform#commandStringForExecutable(exepath, platformInfo)
-			exe '!' . path . ' ' . join(a:args)
-		endif
-	finally
-		if exists("exepath")
-			silent! call delete(exepath)
-		endif
-	endtry
+	let output = system(swift . " " . join(swift_args))
+	if output != ''
+		echohl WarningMsg
+		echo output
+		echohl None
+	endif
+	if !v:shell_error
+		let path = swift#platform#commandStringForExecutable(exepath, platformInfo)
+		exe '!' . path . ' ' . join(a:args)
+	endif
 endfunction
 
 " Emit {{{1
@@ -80,12 +74,13 @@ function! swift#Emit(tab, type, bang, args)
 	endtry
 endfunction
 
-function! s:Emit(path, tab, type, args)
+function! s:Emit(dict, tab, type, args)
 	try
 		let platformInfo = swift#platform#getPlatformInfo(swift#platform#detect())
 		if empty(platformInfo)
 			return
 		endif
+		let basename = fnamemodify(a:dict.path, ':t:r')
 		let args = swift#platform#argsForPlatformInfo(platformInfo)
 		if a:type == 'objc-header'
 			" emitting the objc-header is a bit complicated
@@ -93,11 +88,14 @@ function! s:Emit(path, tab, type, args)
 			" for some reason, even after all that, we still need to import an
 			" obj-c header before it will emit anything useful.
 			let args += ['-import-objc-header', '/dev/null']
+			" and finally, provide a path for the generated swiftmodule inside
+			" the temporary dir, or it will put it in $PWD
+			let args += ['-o', a:dict.tmpdir.'/'.basename.'.swiftmodule']
 		else
 			let args += ['-emit-'.a:type, '-o', '-']
 		endif
 		let args += a:args
-		let args += ['--', a:path]
+		let args += ['--', a:dict.path]
 
 		let swift = 'xcrun swiftc'
 
@@ -133,7 +131,7 @@ function! s:Emit(path, tab, type, args)
 			setl bufhidden=hide
 			setl noswapfile
 			if exists('l:extension')
-				exe 'file' fnameescape(fnamemodify(a:path, ':t:r').'.'.extension)
+				exe 'file' fnameescape(basename.'.'.extension)
 			endif
 		endif
 	endtry
@@ -149,45 +147,57 @@ function! s:SDKPath(platform)
 	return sdk
 endfunction
 
+" Invokes func(dict, ...)
+" Where {dict} is a dictionary with the following keys:
+"   'path' - The path to the file
+"   'tmpdir' - The path to a temporary directory that will be deleted when the
+"              function returns.
+" {dict.path} may be a path to a file inside of {dict.tmpdir} or it may be the
+" existing path of the current buffer. If the path is inside of {dict.tmpdir}
+" then it is guaranteed to have a '.swift' extension.
 function! s:WithPath(func, ...)
+	let buf = bufnr('')
+	let saved = {}
 	try
-		let save_write = &write
+		let saved.write = &write
 		set write
 		let path = expand('%')
 		let pathisempty = empty(path)
-		if pathisempty || !save_write
-			" use a temporary file named 'unnamed.swift' inside a temporary
-			" directory. This produces better error messages
-			let tmpdir = tempname()
-			call mkdir(tmpdir)
 
-			let save_cwd = getcwd()
-			silent exe 'lcd' fnameescape(tmpdir)
+		" Always create a tmpdir in case the wrapped command wants it
+		let tmpdir = tempname()
+		call mkdir(tmpdir)
 
+		if pathisempty || !saved.write
 			" if we're doing this because of nowrite, preserve the filename
-			if !empty(path)
+			if !pathisempty
 				let path = expand('%:t:r').".swift"
 			else
 				let path = 'unnamed.swift'
 			endif
+			let path = tmpdir.'/'.path
 
-			let save_mod = &mod
+			let saved.mod = &mod
 			set nomod
 
-			silent exe 'keepalt write! ' . fnameescape(path)
+			silent exe 'keepalt noautocmd write! ' . fnameescape(path)
 			if pathisempty
-				silent keepalt 0file
+				silent keepalt noautocmd 0file
 			endif
 		else
 			update
 		endif
 
-		call call(a:func, [path] + a:000)
+		let dict = {'path': path, 'tmpdir': tmpdir}
+		call call(a:func, [dict] + a:000)
 	finally
-		if exists("save_mod")   | let &mod = save_mod                    | endif
-		if exists("save_write") | let &write = save_write                | endif
-		if exists("save_cwd")   | silent exe 'lcd' fnameescape(save_cwd) | endif
-		if exists("tmpdir")     | silent call s:RmDir(tmpdir)            | endif
+		if bufexists(buf)
+			for [opt, value] in items(saved)
+				silent call setbufvar(buf, '&'.opt, value)
+				unlet value " avoid variable type mismatches
+			endfor
+		endif
+		if exists("tmpdir") | silent call s:RmDir(tmpdir) | endif
 	endtry
 endfunction
 
