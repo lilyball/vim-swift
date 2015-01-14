@@ -117,17 +117,24 @@ function! s:Emit(path, tab, type, args)
 			d
 			if a:type == 'ir'
 				setl filetype=llvm
+				let extension='ll'
 			elseif a:type == 'assembly'
 				setl filetype=asm
+				let extension='s'
 			elseif a:type == 'sil' || a:type == 'silgen'
 				" we don't have a SIL filetype yet
 				setl filetype=
+				let extension='sil'
 			elseif a:type == 'objc-header'
 				setl filetype=objc
+				let extension='h'
 			endif
 			setl buftype=nofile
 			setl bufhidden=hide
 			setl noswapfile
+			if exists('l:extension')
+				exe 'file' fnameescape(fnamemodify(a:path, ':t:r').'.'.extension)
+			endif
 		endif
 	endtry
 endfunction
