@@ -193,9 +193,9 @@ function! s:WithPath(func, ...)
 			let saved.mod = &mod
 			set nomod
 
-			silent exe 'keepalt noautocmd write! ' . fnameescape(dict.path)
+			silent exe 'keepalt write! ' . fnameescape(dict.path)
 			if pathisempty
-				silent keepalt noautocmd 0file
+				silent keepalt 0file
 			endif
 		else
 			let dict.istemp = 0
