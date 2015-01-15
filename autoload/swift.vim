@@ -150,14 +150,6 @@ endfunction
 
 " Utility functions {{{1
 
-function! s:SDKPath(platform)
-	let sdk = system('xcrun -show-sdk-path -sdk ' . a:platform)
-	if sdk =~ '\n'
-		let sdk = sdk[:-2]
-	endif
-	return sdk
-endfunction
-
 " Invokes func(dict, ...)
 " Where {dict} is a dictionary with the following keys:
 "   'path' - The path to the file
