@@ -37,11 +37,13 @@ function! s:Run(dict, swift_args, args)
 		return
 	endif
 	let swift_args = swift#platform#argsForPlatformInfo(platformInfo)
-	let swift_args += [a:dict.path, '-o', exepath] + a:swift_args
+	let sourcepath = get(a:dict, 'tmpdir_relpath', a:dict.path)
+	let swift_args += [sourcepath, '-o', exepath] + a:swift_args
 
 	let swift = 'xcrun swiftc'
 
-	let output = system(swift . " " . join(swift_args))
+	let pwd = a:dict.istemp ? a:dict.tmpdir : ''
+	let output = s:system(pwd, swift . " " . join(swift_args))
 	if output != ''
 		echohl WarningMsg
 		echo output
@@ -95,11 +97,12 @@ function! s:Emit(dict, tab, type, args)
 			let args += ['-emit-'.a:type, '-o', '-']
 		endif
 		let args += a:args
-		let args += ['--', a:dict.path]
+		let args += ['--', get(a:dict, 'tmpdir_relpath', a:dict.path)]
 
 		let swift = 'xcrun swiftc'
 
-		let output = system(swift . " " . join(args))
+		let pwd = a:dict.istemp ? a:dict.tmpdir : ''
+		let output = s:system(pwd, swift . " " . join(args))
 		if v:shell_error
 			echohl WarningMessage
 			echo output
@@ -155,43 +158,50 @@ endfunction
 "   'path' - The path to the file
 "   'tmpdir' - The path to a temporary directory that will be deleted when the
 "              function returns.
+"   'istemp' - 1 if the path is a file inside of {dict.tmpdir} or 0 otherwise.
+" If {istemp} is 1 then an additional key is provided:
+"   'tmpdir_relpath' - The {path} relative to the {tmpdir}.
+"
 " {dict.path} may be a path to a file inside of {dict.tmpdir} or it may be the
 " existing path of the current buffer. If the path is inside of {dict.tmpdir}
 " then it is guaranteed to have a '.swift' extension.
 function! s:WithPath(func, ...)
 	let buf = bufnr('')
 	let saved = {}
+	let dict = {}
 	try
 		let saved.write = &write
 		set write
-		let path = expand('%')
-		let pathisempty = empty(path)
+		let dict.path = expand('%')
+		let pathisempty = empty(dict.path)
 
 		" Always create a tmpdir in case the wrapped command wants it
-		let tmpdir = tempname()
-		call mkdir(tmpdir)
+		let dict.tmpdir = tempname()
+		call mkdir(dict.tmpdir)
 
 		if pathisempty || !saved.write
+			let dict.istemp = 1
 			" if we're doing this because of nowrite, preserve the filename
 			if !pathisempty
-				let path = expand('%:t:r').".swift"
+				let filename = expand('%:t:r').".swift"
 			else
-				let path = 'unnamed.swift'
+				let filename = 'unnamed.swift'
 			endif
-			let path = tmpdir.'/'.path
+			let dict.tmpdir_relpath = filename
+			let dict.path = dict.tmpdir.'/'.filename
 
 			let saved.mod = &mod
 			set nomod
 
-			silent exe 'keepalt noautocmd write! ' . fnameescape(path)
+			silent exe 'keepalt noautocmd write! ' . fnameescape(dict.path)
 			if pathisempty
 				silent keepalt noautocmd 0file
 			endif
 		else
+			let dict.istemp = 0
 			update
 		endif
 
-		let dict = {'path': path, 'tmpdir': tmpdir}
 		call call(a:func, [dict] + a:000)
 	finally
 		if bufexists(buf)
@@ -200,7 +210,7 @@ function! s:WithPath(func, ...)
 				unlet value " avoid variable type mismatches
 			endfor
 		endif
-		if exists("tmpdir") | silent call s:RmDir(tmpdir) | endif
+		if has_key(dict, 'tmpdir') | silent call s:RmDir(dict.tmpdir) | endif
 	endtry
 endfunction
 
@@ -237,6 +247,16 @@ function! s:RmDir(path)
 		return 0
 	endif
 	silent exe "!rm -rf " . shellescape(a:path)
+endfunction
+
+" Executes {cmd} with the cwd set to {pwd}, without changing Vim's cwd.
+" If {pwd} is the empty string then it doesn't change the cwd.
+function! s:system(pwd, cmd)
+	let cmd = a:cmd
+	if !empty(a:pwd)
+		let cmd = 'cd ' . shellescape(a:pwd) . ' && ' . cmd
+	endif
+	return system(cmd)
 endfunction
 
 " }}}1
