@@ -121,8 +121,9 @@ endfunction
 "       identifier: Runtime identifier, e.g. "com.apple.CoreSimulator.SimRuntime.iOS-8-2"
 "     }
 "
-"   If an error occurs with simctl, a message is echoed and {} is returned.
-function! swift#platform#simDeviceInfo()
+" If an error occurs with simctl, a message is echoed and {} is returned.
+" Unavailable devices are not returned.
+function! swift#platform#simDeviceInfo(...)
     let output = s:system('xcrun simctl list')
     if output.status
         redraw
@@ -180,10 +181,15 @@ function! swift#platform#simDeviceInfo()
                 let deviceRuntime = matchstr(line, '^-- \zs.*\ze --$')
             elseif empty(deviceRuntime)
                 let state = -1
+            elseif deviceRuntime =~? '^Unavailable:'
+                " the runtime is unavailable, all devices in here will be
+                " expected to similarly be unavailable.
             else
-                let matches = matchlist(line, '^\s*\(\w\&[^(]*\w\)\s\+(\([^)]*\))\s\+(\([^)]*\))\s*$')
+                let matches = matchlist(line, '^\s*\(\w\&[^(]*\w\)\s\+(\([^)]*\))\s\+(\([^)]*\))\%(\s\+(\([^)]*\))\)\?\s*$')
                 if empty(matches)
                     let state = -1
+                elseif matches[4] =~? '^unavailable\>'
+                    " the device is unavailable
                 else
                     call add(devices, {
                                 \ 'name': matches[1],
@@ -201,6 +207,7 @@ function! swift#platform#simDeviceInfo()
             echohl ErrorMsg
             echom "Error: Unexpected output from shell command `xcrun simctl list`"
             echohl None
+            echom line
             return {}
         endif
     endfor
