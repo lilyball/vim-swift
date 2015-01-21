@@ -22,10 +22,16 @@ endfunction
 
 function! SyntaxCheckers_swift_swift_GetLocList() dict
     let sdk = syntastic#util#shescape(system('xcrun -show-sdk-path -sdk macosx')[:-2])
+    let platformInfo = swift#platform#getPlatformInfo(swift#platform#detect())
+    if empty(platformInfo)
+        return []
+    endif
+    let args = swift#platform#argsForPlatformInfo(platformInfo)
+
     " disable escaping on the exe
     let makeprg = self.makeprgBuild({
                 \ 'exe': self.getExec(),
-                \ 'args_before': '-sdk ' . sdk,
+                \ 'args_before': args,
                 \ 'args': '-parse'})
 
     let errorformat =
