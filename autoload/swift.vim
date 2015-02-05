@@ -104,7 +104,7 @@ function! s:Emit(dict, tab, type, args)
 		let pwd = a:dict.istemp ? a:dict.tmpdir : ''
 		let output = s:system(pwd, swift . " " . join(args))
 		if v:shell_error
-			echohl WarningMessage
+			echohl WarningMsg
 			echo output
 			echohl None
 		else
