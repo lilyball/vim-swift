@@ -49,7 +49,7 @@ let s:modifiers = ['final', 'lazy', 'optional', 'required', 'override',
 let s:modifiers_suffixed = ['unowned\_s*(safe)', 'unowned\_s*(unsafe)']
 let s:accessControl = ['public', 'private', 'internal']
 
-let s:declarations_re = '\<\%('.join(s:declarations, '\|').'\)\>'
+let s:declarations_re = '\<\%(init\>[?!]\|\%('.join(s:declarations, '\|').'\)\>\)'
 let s:modifiers_re = '\<\%('.join(map(s:modifiers, 'v:val."\\>"'), '\|')
             \.'\|'.join(s:modifiers_suffixed, '\|').'\)'
 let s:accessControl_re = '\<\%('.join(s:accessControl, '\|').'\)\>'
@@ -276,7 +276,7 @@ syn cluster swiftDefs add=swiftOperatorDef
 " Functions {{{3
 
 syn match swiftFuncDef /\<func\>\_s*[^[:space:]();<]\+\_s*\ze\%((\|<\)/ contains=@swiftExprs nextgroup=swiftFuncArgs,swiftFuncGenerics
-syn match swiftSpecialFuncDef /\<\%(init\|deinit\)\>\_s*\ze(/ contains=swiftKeyword nextgroup=swiftFuncArgs
+syn match swiftSpecialFuncDef /\<\%(init\>[?!]\?\|deinit\>\)\_s*\ze(/ contains=swiftKeyword nextgroup=swiftFuncArgs
 syn region swiftFuncGenerics start="<" end="\ze\_." contained contains=swiftGenerics nextgroup=swiftFuncArgs skipwhite skipempty
 syn region swiftFuncArgs matchgroup=swiftFuncArgs start="(" end=")" contained contains=@swiftExprs,swiftFuncArgInout transparent nextgroup=swiftFuncBody skipwhite skipempty
 syn region swiftFuncBody matchgroup=swiftFuncBody start="{" end="}" contained contains=@swiftItems,@swiftExprs fold
