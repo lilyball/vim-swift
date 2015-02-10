@@ -93,12 +93,9 @@ syn keyword swiftKeyword import let
 syn keyword swiftKeyword static typealias
 syn keyword swiftKeyword break case continue default do else fallthrough if in
 syn keyword swiftKeyword for return switch where while
-syn keyword swiftKeyword as dynamicType is super self Self
+syn keyword swiftKeyword dynamicType is super self Self
 syn keyword swiftKeyword __COLUMN__ __FILE__ __FUNCTION__ __LINE__
-
-" Undocumented keywords {{{3
-
-syn keyword swiftKeyword new
+syn match swiftKeyword ,\<as\>[?!]\?,
 
 " Special types {{{3
 
