@@ -297,9 +297,11 @@ syn cluster swiftDefs add=swiftSubscriptDef
 
 " Variables {{{3
 
-syn match swiftVarDef /\<var\>\_s*\%([^[:space:][:punct:][:cntrl:][:digit:]]\|\i\)\%([^[:space:][:punct:][:cntrl:]]\|\i\)*/ contains=swiftKeyword,swiftIdentifier nextgroup=swiftVarTypeAscription,swiftVarBody skipwhite skipempty
+syn match swiftVarDef /\<var\>\_s*\%([^[:space:][:punct:][:cntrl:][:digit:]]\|\i\)\%([^[:space:][:punct:][:cntrl:]]\|\i\)*/ contains=swiftKeyword,swiftIdentifier nextgroup=swiftVarTypeAscription,swiftVarDefaultValue,swiftVarBody skipwhite skipempty
 syn match swiftVarTypeAscription /:/ contained nextgroup=swiftVarType skipwhite skipempty
-syn region swiftVarType start=/./ end=/\ze\_./ contained contains=swiftTypeExpr nextgroup=swiftVarBody skipwhite skipempty
+syn region swiftVarType start=/./ end=/\ze\_./ contained contains=swiftTypeExpr nextgroup=swiftVarDefaultValue,swiftVarBody skipwhite skipempty
+syn match swiftVarDefaultValue /=/ contained nextgroup=swiftVarDefaultValueExpr skipwhite skipempty
+syn region swiftVarDefaultValueExpr start=/\S/ end=/\ze\_./ contained contains=@swiftExprs nextgroup=swiftVarBody skipwhite skipempty
 syn region swiftVarBody matchgroup=swiftVarBody start="{" end="}" fold contained contains=@swiftItems,@swiftExprs,swiftVarAttribute
 syn keyword swiftVarAttribute contained nextgroup=swiftVarAttributeBlock skipwhite skipempty get
 syn match swiftVarAttribute /\<\%(set\|willSet\|didSet\)\>/ contained nextgroup=swiftVarAttributeArg,swiftVarAttributeBlock skipwhite skipempty
