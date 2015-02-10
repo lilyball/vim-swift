@@ -344,6 +344,22 @@ syn cluster swiftCommentBlockMarker contains=swiftCommentTodo,swiftCommentBlockM
 
 syn cluster swiftExprs add=swiftCommentLine,swiftCommentBlock,swiftDocCommentLine,swiftDocCommentBlock
 
+" Conditional Compilation {{{2
+
+syn region swiftConditionalCompilation excludenl start=/^#if\>/ end=/$/ contained contains=swiftBuildConfiguration oneline
+syn region swiftConditionalCompilation excludenl start=/^#else\>/ end=/$/ contained oneline
+syn region swiftConditionalCompilation excludenl start=/^#elseif\>/ end=/$/ contained contains=swiftBuildConfiguration oneline
+syn region swiftConditionalCompilation excludenl start=/^#endif\>/ end=/$/ contained oneline
+
+syn match swiftBuildConfiguration /\<os([^)]*)/ contained contains=swiftBuildConfigurationOS
+syn match swiftBuildConfiguration /\<arch([^)]*)/ contained contains=swiftBuildConfigurationArch
+syn match swiftBuildConfiguration /\<\%(true\|false\)\>/ contained contains=swiftBoolean
+
+syn keyword swiftBuildConfigurationOS OSX iOS contained
+syn keyword swiftBuildConfigurationArch x86_64 arm arm64 i386 contained
+
+syn cluster swiftExprs add=swiftConditionalCompilation
+
 " Default highlighting {{{1
 
 hi def link swiftKeyword Keyword
@@ -401,6 +417,10 @@ hi def link swiftDocCommentBlockDelim swiftDocCommentBlock
 hi def link swiftCommentTodo Todo
 hi def link swiftCommentLineMark PreProc
 hi def link swiftCommentBlockMark PreProc
+
+hi def link swiftConditionalCompilation PreProc
+hi def link swiftBuildConfiguration swiftConditionalCompilation
+hi def link swiftBuildConfigurationOS Special
 
 " }}}1
 
