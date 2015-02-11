@@ -183,6 +183,25 @@ syn keyword swiftProtocol StringElementType
 
 syn cluster swiftExprs add=swiftProtocol
 
+" Built-in functions {{{2
+
+let s:functions = [
+            \ 'abs', 'advance', 'alignof', 'alignofValue', 'assert', 'assertionFailure', 'contains', 'count',
+            \ 'debugPrint', 'debugPrintln', 'distance', 'dropFirst', 'dropLast', 'dump', 'enumerate', 'equal', 'extend',
+            \ 'fatalError', 'filter', 'find', 'first', 'getVaList', 'indices', 'insert', 'isEmpty',
+            \ 'isUniquelyReferenced', 'isUniquelyReferencedNonObjC', 'join', 'last', 'lazy', 'lexicographicalCompare',
+            \ 'map', 'max', 'maxElement', 'min', 'minElement', 'numericCast', 'overlaps', 'partition', 'precondition',
+            \ 'preconditionFailure', 'prefix', 'print', 'println', 'reduce', 'reflect', 'removeAll', 'removeAtIndex',
+            \ 'removeLast', 'removeRange', 'reverse', 'sizeof', 'sizeofValue', 'sort', 'sorted', 'splice', 'split',
+            \ 'startsWith', 'stride', 'strideof', 'strideofValue', 'suffix', 'swap', 'toDebugString', 'toString',
+            \ 'transcode', 'underestimateCount', 'unsafeAddressOf', 'unsafeBitCast', 'unsafeDowncast',
+            \ 'withExtendedLifetime', 'withUnsafeMutablePointer', 'withUnsafeMutablePointers', 'withUnsafePointer',
+            \ 'withUnsafePointers', 'withVaList', 'zip'
+            \]
+let s:functions_re = '\<\%(\.\@1<!\|\%(\.\@1<!Swift\.\)\@6<=\)\%('.join(s:functions, '\|').'\)\>'
+exe 'syn match swiftStdlibFunction /'.s:functions_re.'/ display'
+syn cluster swiftExprs add=swiftStdlibFunction
+
 " Literals {{{2
 
 syn cluster swiftLiteral contains=NONE
@@ -372,6 +391,8 @@ hi def link swiftProtocol PreProc
 
 hi def link swiftAccessControl      Keyword
 hi def link swiftAccessControlScope swiftAccessControl
+
+hi def link swiftStdlibFunction Function
 
 hi def link swiftLiteral  Number
 hi def link swiftInteger  swiftLiteral
