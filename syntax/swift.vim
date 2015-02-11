@@ -118,9 +118,10 @@ syn keyword swiftType Double Float Float32 Float64 Float80
 syn keyword swiftType Bool Bit Void
 
 " Containers
-syn keyword swiftType Array Dictionary Slice
+syn keyword swiftType Array Dictionary Set Slice
 syn keyword swiftType Optional ImplicitlyUnwrappedOptional
-syn keyword swiftType ContiguousArray HeapBuffer
+syn keyword swiftType ContiguousArray
+syn keyword swiftType ManagedBuffer ManagedBufferPointer ManagedProtoBuffer
 
 " String-related types
 syn keyword swiftType String StaticString UTF8 UTF16 UTF32 UnicodeScalar Character
@@ -158,6 +159,7 @@ syn keyword swiftType FloatingPointClassification
 syn keyword swiftType MirrorDisposition QuickLookObject
 syn keyword swiftType UnicodeDecodingResult
 syn keyword swiftType RawRepresentable
+syn keyword swiftType NonObjectiveCBase
 
 syn cluster swiftExprs add=swiftType
 
@@ -230,7 +232,7 @@ syn cluster swiftLiteral add=swiftNil
 
 " Library values {{{2
 
-syn match swiftLibraryValue /\.\@1<!\<\%(C_ARGC\|C_ARGV\|Process\)\>/
+syn match swiftLibraryValue /\.\@1<!\<Process\>/
 
 syn match swiftLibraryEnumValue /\.\@1<=\%(Some\ze(\|None\>\)/
 
