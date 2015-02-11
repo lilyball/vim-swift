@@ -184,6 +184,9 @@ COMMANDS                                                      *swift-commands*
 		{not available when the |+windows| feature was disabled at
 		compile time}
 
+:SwiftVersion                                                  *:SwiftVersion*
+		Prints the current Swift compiler version.
+
 ==============================================================================
 MAPPINGS                                                      *swift-mappings*
 

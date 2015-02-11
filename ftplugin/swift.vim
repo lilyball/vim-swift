@@ -68,6 +68,9 @@ command! -nargs=* -buffer SwiftEmitAsm call swift#Emit(0, "assembly", 0, <q-args
 " See |:SwiftEmitObjcHeader| for docs
 command! -nargs=* -buffer SwiftEmitHeader call swift#Emit(0, "objc-header", 0, <q-args>)
 
+" See |:SwiftVersion| for docs
+command! -buffer -bar SwiftVersion call swift#PrintVersion()
+
 " Tab command variants {{{2
 
 if has("windows")

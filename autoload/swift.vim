@@ -151,6 +151,22 @@ function! s:Emit(dict, tab, type, args)
 	endtry
 endfunction
 
+" Version {{{1
+
+function! swift#PrintVersion()
+	let cmd = swift#swiftc() . ' -version'
+	let output = system(l:cmd)
+	let output = substitute(output, '\_s\+\%$', '', '')
+	if v:shell_error == 0
+		echo output
+	else
+		echohl ErrorMsg
+		echo 'error running: '.l:cmd
+		echohl None
+		echo output
+	endif
+endfunction
+
 " Utility functions {{{1
 
 " Invokes func(dict, ...)
