@@ -277,6 +277,17 @@ function! swift#swiftc(...)
 	return result
 endfunction
 
+" Returns 1 if vimproc is available
+function! swift#hasVimproc()
+	if !exists('*vimproc#version')
+		try
+			call vimproc#version()
+		catch
+		endtry
+	endif
+	return exists('*vimproc#version')
+endfunction
+
 " }}}1
 
 " vim: set noet sw=4 ts=4:

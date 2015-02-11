@@ -209,5 +209,10 @@ swift/device                                 *swift-unite-source-swift-device*
 		Candidates are all available iOS Simulator devices. The
 		default action is to set |g:swift_device|.
 
+swift/developer_dir                   *swift-unite-source-swift-developer_dir*
+		Note: Requires |vimproc|.
+		Candidates are the available Xcode installations on the
+		system. The default action is to set |g:swift_developer_dir|.
+
 ==============================================================================
  vim:tw=78:sw=4:noet:ts=8:ft=help:norl:

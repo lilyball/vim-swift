@@ -332,13 +332,7 @@ function! s:hasUnite()
     return exists('*unite#version')
 endfunction
 
-if !exists('*vimproc#version')
-    try
-        call vimproc#version()
-    catch
-    endtry
-endif
-if exists('*vimproc#version')
+if swift#hasVimproc()
     function! s:system(cmd)
         let file = vimproc#popen3(a:cmd)
         let stdout = file.stdout.read_lines()
