@@ -1,7 +1,7 @@
 " File: syntax_checkers/swift/swift.vim
 " Author: Kevin Ballard
 " Description: Syntastic checker for Swift
-" Last Change: June 23, 2014
+" Last Change: Feb 10, 2015
 
 if exists("g:loaded_syntastic_swift_swift_checker")
     finish
@@ -11,17 +11,25 @@ let g:loaded_syntastic_swift_swift_checker = 1
 let s:save_cpo = &cpo
 set cpo&vim
 
+function! s:getExec(dict, fallback, ...)
+    let exec = a:dict.getExec()
+    if exec =~? '^\%(xcrun\s\+\)\?swiftc\s*$'
+        return call(function('swift#swiftc'), a:000)
+    endif
+    return a:fallback ? a:dict.getExec() : ''
+endfunction
+
 function! SyntaxCheckers_swift_swift_IsAvailable() dict
-    let exec = self.getExec()
-    if exec =~ '^xcrun '
-        call system('xcrun -find ' . exec[6:])
+    let exec = s:getExec(self, 0, '-find')
+    if !empty(exec)
+        call system(exec)
         return v:shell_error == 0
     endif
+    let exec = self.getExec()
     return executable(exec)
 endfunction
 
 function! SyntaxCheckers_swift_swift_GetLocList() dict
-    let sdk = syntastic#util#shescape(system('xcrun -show-sdk-path -sdk macosx')[:-2])
     let platformInfo = swift#platform#getPlatformInfo(swift#platform#detect())
     if empty(platformInfo)
         return []
@@ -30,7 +38,7 @@ function! SyntaxCheckers_swift_swift_GetLocList() dict
 
     " disable escaping on the exe
     let makeprg = self.makeprgBuild({
-                \ 'exe': self.getExec(),
+                \ 'exe': s:getExec(self, 1),
                 \ 'args_before': args,
                 \ 'args': '-parse'})
 

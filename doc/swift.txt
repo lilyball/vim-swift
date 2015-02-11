@@ -41,6 +41,17 @@ g:swift_no_fold~
 	2		Folding is not enabled. 'foldmethod' and 'foldlevel'
 			are both left at their current values.
 
+                                                       *g:swift_developer_dir*
+g:swift_developer_dir~
+	Type: String
+	Set this option to a path to use for DEVELOPER_DIR: >
+		let g:swift_developer_dir='/Applications/Xcode-Beta.app'
+<
+	This option may also be specified as *w:swift_developer_dir* or
+	*b:swift_developer_dir*
+
+	If unset, the default developer dir is used (see `xcode-select`).
+
                                                             *g:swift_platform*
 g:swift_platform~
 	Type: String

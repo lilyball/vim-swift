@@ -1,7 +1,7 @@
 " File: autoload/swift.vim
 " Author: Kevin Ballard
 " Description: Helper functions for Swift
-" Last Change: Jan 08, 2015
+" Last Change: Feb 10, 2015
 
 " Run {{{1
 
@@ -40,7 +40,7 @@ function! s:Run(dict, swift_args, args)
 	let sourcepath = get(a:dict, 'tmpdir_relpath', a:dict.path)
 	let swift_args += [sourcepath, '-o', exepath] + a:swift_args
 
-	let swift = 'xcrun swiftc'
+	let swift = swift#swiftc()
 
 	let pwd = a:dict.istemp ? a:dict.tmpdir : ''
 	let output = s:system(pwd, swift . " " . join(swift_args))
@@ -99,7 +99,7 @@ function! s:Emit(dict, tab, type, args)
 		let args += a:args
 		let args += ['--', get(a:dict, 'tmpdir_relpath', a:dict.path)]
 
-		let swift = 'xcrun swiftc'
+		let swift = swift#swiftc()
 
 		let pwd = a:dict.istemp ? a:dict.tmpdir : ''
 		let output = s:system(pwd, swift . " " . join(args))
@@ -257,6 +257,24 @@ function! s:system(pwd, cmd)
 		let cmd = 'cd ' . shellescape(a:pwd) . ' && ' . cmd
 	endif
 	return system(cmd)
+endfunction
+
+" Returns a string that can be passed to the shell to invoke swiftc
+" Optional argument is flags to pass to xcrun.
+function! swift#swiftc(...)
+	let l:key = 'swift_developer_dir'
+	let developer_dir = get(b:, l:key, get(w:, l:key, get(g:, l:key, '')))
+	if empty(developer_dir)
+		let result = ''
+	else
+		let result = 'env '.shellescape('DEVELOPER_DIR='.developer_dir).' '
+	endif
+	let result .= 'xcrun '
+	if a:0 > 0
+		let result .= a:1.' '
+	endif
+	let result .= 'swiftc'
+	return result
 endfunction
 
 " }}}1
