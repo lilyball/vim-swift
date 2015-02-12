@@ -43,15 +43,17 @@ function! s:Run(dict, swift_args, args)
 	let swift = swift#swiftc()
 
 	let pwd = a:dict.istemp ? a:dict.tmpdir : ''
-	let output = s:system(pwd, swift . " " . join(swift_args))
-	if output != ''
+	let cmd = swift#util#system(swift.' '.join(map(swift_args, 'shellescape(v:val)')), pwd)
+	if !empty(cmd.output)
 		echohl WarningMsg
-		echo output
+		for line in cmd.output
+			echo line
+		endfor
 		echohl None
 	endif
-	if !v:shell_error
+	if cmd.status == 0
 		let path = swift#platform#commandStringForExecutable(exepath, platformInfo)
-		exe '!' . path . ' ' . join(a:args)
+		exe '!' . path . ' ' . join(map(a:args, 'shellescape(v:val)'))
 	endif
 endfunction
 
@@ -102,10 +104,12 @@ function! s:Emit(dict, tab, type, args)
 		let swift = swift#swiftc()
 
 		let pwd = a:dict.istemp ? a:dict.tmpdir : ''
-		let output = s:system(pwd, swift . " " . join(args))
-		if v:shell_error
+		let cmd = swift#util#system(swift.' '.join(map(args, 'shellescape(v:val)')), pwd)
+		if cmd.status != 0
 			echohl WarningMsg
-			echo output
+			for line in cmd.output
+				echo line
+			endfor
 			echohl None
 		else
 			if a:tab
@@ -113,7 +117,7 @@ function! s:Emit(dict, tab, type, args)
 			else
 				new
 			endif
-			silent put =output
+			silent put =cmd.output
 			1
 			d
 			if a:type == 'ir'
@@ -265,16 +269,6 @@ function! s:RmDir(path)
 	silent exe "!rm -rf " . shellescape(a:path)
 endfunction
 
-" Executes {cmd} with the cwd set to {pwd}, without changing Vim's cwd.
-" If {pwd} is the empty string then it doesn't change the cwd.
-function! s:system(pwd, cmd)
-	let cmd = a:cmd
-	if !empty(a:pwd)
-		let cmd = 'cd ' . shellescape(a:pwd) . ' && ' . cmd
-	endif
-	return system(cmd)
-endfunction
-
 " Returns a string that can be passed to the shell to invoke swiftc
 " Optional argument is flags to pass to xcrun.
 function! swift#swiftc(...)
@@ -291,17 +285,6 @@ function! swift#swiftc(...)
 	endif
 	let result .= 'swiftc'
 	return result
-endfunction
-
-" Returns 1 if vimproc is available
-function! swift#hasVimproc()
-	if !exists('*vimproc#version')
-		try
-			call vimproc#version()
-		catch
-		endtry
-	endif
-	return exists('*vimproc#version')
 endfunction
 
 " }}}1

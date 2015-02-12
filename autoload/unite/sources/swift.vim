@@ -27,6 +27,11 @@ let s:source_device = {
 
 function! s:source_device.gather_candidates(args, context) "{{{
     let devices = swift#platform#simDeviceInfo()
+    if empty(devices)
+        redraw
+        call unite#print_source_error('Error fetching sim device info', self.name)
+        return []
+    endif
     return map(copy(devices), "{ 'word': v:val.name, 'group': v:val.runtime.name }")
 endfunction "}}}
 
@@ -67,63 +72,63 @@ endfunction "}}}
 " }}}
 " swift/developer_dir {{{
 
-if swift#hasVimproc()
-    let s:source_dev_dir = {
-                \ 'name': 'swift/developer_dir',
-                \ 'hooks': {},
-                \ 'action_table': {},
-                \ 'default_action': 'set_global',
-                \ 'description': 'Xcode directories for use with Swift'
-                \}
+let s:source_dev_dir = {
+            \ 'name': 'swift/developer_dir',
+            \ 'hooks': {},
+            \ 'action_table': {},
+            \ 'default_action': 'set_global',
+            \ 'description': 'Xcode directories for use with Swift'
+            \}
 
-    function! s:source_dev_dir.gather_candidates(args, context) "{{{
-        let cmd = vimproc#popen3('mdfind "kMDItemCFBundleIdentifier = com.apple.dt.Xcode"')
-        let stdout = cmd.stdout.read_lines()
-        let stderr = cmd.stderr.read_lines()
-        let status = cmd.waitpid()
-        if status[0] == 'exit' && status[1] == 0
-            let result = [{'word': '', 'abbr': '(default)'}]
-            call extend(result, map(stdout, "{ 'word': v:val }"))
-            return result
-        else
-            echoerr 'swift/developer_dir: mdfind error'
-            for line in stderr
-                echo line
-            endfor
-            return []
-        endif
-    endfunction "}}}
+function! s:source_dev_dir.gather_candidates(args, context) "{{{
+    if !swift#util#has_vimproc()
+        call unite#print_source_message('vimproc plugin is not installed.', self.name)
+        return []
+    endif
+    let cmd = vimproc#popen3('mdfind "kMDItemCFBundleIdentifier = com.apple.dt.Xcode"')
+    let stdout = cmd.stdout.read_lines()
+    let stderr = cmd.stderr.read_lines()
+    let status = cmd.waitpid()
+    if status[0] == 'exit' && status[1] == 0
+        let result = [{'word': '', 'abbr': '(default)'}]
+        call extend(result, map(stdout, "{ 'word': v:val }"))
+        return result
+    else
+        echoerr 'swift/developer_dir: mdfind error'
+        for line in stderr
+            echo line
+        endfor
+        return []
+    endif
+endfunction "}}}
 
-    " Actions {{{
+" Actions {{{
 
-    let s:source_dev_dir.action_table.set_buffer = {
-                \ 'description': 'select the Swift developer dir (buffer-local)',
-                \ 'is_selectable': 0
-                \}
-    function! s:source_dev_dir.action_table.set_buffer.func(candidate) "{{{
-        if empty(a:candidate.word)
-            unlet b:swift_developer_dir
-        else
-            let b:swift_developer_dir = a:candidate.word
-        endif
-    endfunction "}}}
+let s:source_dev_dir.action_table.set_buffer = {
+            \ 'description': 'select the Swift developer dir (buffer-local)',
+            \ 'is_selectable': 0
+            \}
+function! s:source_dev_dir.action_table.set_buffer.func(candidate) "{{{
+    if empty(a:candidate.word)
+        unlet b:swift_developer_dir
+    else
+        let b:swift_developer_dir = a:candidate.word
+    endif
+endfunction "}}}
 
-    let s:source_dev_dir.action_table.set_global = {
-                \ 'description': 'select the Swift developer dir (global)',
-                \ 'is_selectable': 0
-                \}
-    function! s:source_dev_dir.action_table.set_global.func(candidate) "{{{
-        if empty(a:candidate.word)
-            unlet g:swift_developer_dir
-        else
-            let g:swift_developer_dir = a:candidate.word
-        endif
-    endfunction "}}}
+let s:source_dev_dir.action_table.set_global = {
+            \ 'description': 'select the Swift developer dir (global)',
+            \ 'is_selectable': 0
+            \}
+function! s:source_dev_dir.action_table.set_global.func(candidate) "{{{
+    if empty(a:candidate.word)
+        unlet g:swift_developer_dir
+    else
+        let g:swift_developer_dir = a:candidate.word
+    endif
+endfunction "}}}
 
-    " }}}
-else
-    let s:source_dev_dir = {}
-endif
+" }}}
 
 " }}}
 

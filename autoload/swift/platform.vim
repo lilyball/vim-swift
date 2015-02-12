@@ -124,18 +124,18 @@ endfunction
 " If an error occurs with simctl, a message is echoed and {} is returned.
 " Unavailable devices are not returned.
 function! swift#platform#simDeviceInfo(...)
-    let output = s:system('xcrun simctl list')
-    if output.status
+    let cmd = swift#util#system('xcrun simctl list')
+    if cmd.status
         redraw
         echohl ErrorMsg
         echom "Error: Shell command `xcrun simctl list` failed with error:"
         echohl None
-        if has_key(output, 'stderr')
-            for line in output.stderr
+        if has_key(cmd, 'stderr')
+            for line in cmd.stderr
                 echom line
             endfor
         else
-            for line in output.stdout
+            for line in cmd.output
                 echom line
             endfor
         endif
@@ -147,7 +147,7 @@ function! swift#platform#simDeviceInfo(...)
     let devices = []
     let state = 0
     let deviceRuntime = ''
-    for line in output.stdout
+    for line in cmd.output
         if line == ''
             continue
         endif
@@ -221,6 +221,9 @@ endfunction
 " Arguments:
 "   {platform} - A platform dictionary as returned by swift#platform#detect()
 " Returns:
+"   A copy of {platform} augmented with the following keys:
+"     deviceInfo - optional, included for the iphonesimulator platform
+"
 "   A copy of {platform} augmented with a 'deviceInfo' key if relevant,
 "   or {} if an error occurred (the error will be echoed).
 function! swift#platform#getPlatformInfo(platform)
@@ -291,11 +294,8 @@ function! swift#platform#argsForPlatformInfo(platformInfo)
 endfunction
 
 function! swift#platform#sdkPath(sdkname)
-    let sdk = system('xcrun -show-sdk-path -sdk ' . a:sdkname)
-    if sdk =~ '\n'
-        let sdk = sdk[:-2]
-    endif
-    return sdk
+    let sdk = swift#util#system('xcrun -show-sdk-path -sdk ' . a:sdkname).output
+    return empty(sdk) ? "" : sdk[0]
 endfunction
 
 " Arguments:
@@ -331,27 +331,3 @@ function! s:hasUnite()
     endif
     return exists('*unite#version')
 endfunction
-
-if swift#hasVimproc()
-    function! s:system(cmd)
-        let file = vimproc#popen3(a:cmd)
-        let stdout = file.stdout.read_lines()
-        let stderr = file.stderr.read_lines()
-        let status = file.waitpid()
-        if status[0] == 'exit'
-            let code = status[1]
-        else
-            " presumably a signal
-            let code = 128 + status[1]
-        endif
-        return { 'stdout': stdout, 'stderr': stderr, 'status': code }
-    endfunction
-else
-    function! s:system(cmd)
-        " we can't split output and error without vimproc
-        let output = system(a:cmd)
-        let status = v:shell_error
-        let lines = split(output, '\n')
-        return { 'stdout': lines, 'status': status }
-    endfunction
-endif
