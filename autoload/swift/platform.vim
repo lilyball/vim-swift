@@ -277,8 +277,13 @@ endfunction
 "   A List of arguments to be passed to swiftc. If the device is invalid
 "   or another error occurred, an error is echoed and [] is returned.
 function! swift#platform#argsForPlatformInfo(platformInfo)
+    let sdkInfo = swift#platform#sdkInfo(a:platformInfo.platform)
+    let args = ['-sdk', sdkInfo.path]
+    let devFrameworks = sdkInfo.platformPath . '/Developer/Library/Frameworks'
+    let args += ['-F', devFrameworks]
+    let args += ['-Xlinker', '-rpath', '-Xlinker', devFrameworks]
     if a:platformInfo.platform == 'macosx'
-        return ['-sdk', swift#platform#sdkPath(a:platformInfo.platform)]
+        return args
     elseif a:platformInfo.platform == 'iphonesimulator'
         let deviceInfo = a:platformInfo.deviceInfo
         if index(g:swift#platform#32bitDevices, deviceInfo.type) >= 0
@@ -287,15 +292,25 @@ function! swift#platform#argsForPlatformInfo(platformInfo)
             let arch = 'x86_64'
         endif
         let target = arch.'-apple-ios'.deviceInfo.runtime.version
-        return ['-sdk', swift#platform#sdkPath(a:platformInfo.platform), '-target', target]
+        return extend(args, ['-target', target])
     else
         throw "swift: unexpected platform ".a:platformInfo.platform
     endif
 endfunction
 
-function! swift#platform#sdkPath(sdkname)
-    let sdk = swift#util#system('xcrun -show-sdk-path -sdk ' . a:sdkname).output
-    return empty(sdk) ? "" : sdk[0]
+" Returns a dictionary with information about the current SDK with keys:
+"   path - String - The SDK path.
+"   platformPath - String - The SDK platform path.
+" The dictionary values may be "" if an error occurs.
+function! swift#platform#sdkInfo(sdkname)
+    " it's actually faster to run xcrun twice than to run xcodebuild once.
+    let pathCmd = swift#util#system('xcrun -show-sdk-path -sdk ' . a:sdkname)
+    let platformPathCmd = swift#util#system('xcrun -show-sdk-platform-path -sdk ' . a:sdkname)
+    return {
+                \ 'path': pathCmd.status != 0 || empty(pathCmd.output) ? "" : pathCmd.output[0],
+                \ 'platformPath': platformPathCmd.status != 0 || empty(platformPathCmd.output) ?
+                \                 "" : platformPathCmd.output[0]
+                \}
 endfunction
 
 " Arguments:
