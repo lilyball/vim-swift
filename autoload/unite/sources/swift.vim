@@ -85,18 +85,15 @@ function! s:source_dev_dir.gather_candidates(args, context) "{{{
         call unite#print_source_message('vimproc plugin is not installed.', self.name)
         return []
     endif
-    let cmd = vimproc#popen3('mdfind "kMDItemCFBundleIdentifier = com.apple.dt.Xcode"')
-    let stdout = cmd.stdout.read_lines()
-    let stderr = cmd.stderr.read_lines()
-    let status = cmd.waitpid()
-    if status[0] == 'exit' && status[1] == 0
+    let cmd = swift#util#system('mdfind "kMDItemCFBundleIdentifier = com.apple.dt.Xcode"')
+    if cmd.status == 0
         let result = [{'word': '', 'abbr': '(default)'}]
-        call extend(result, map(stdout, "{ 'word': v:val }"))
+        call extend(result, map(cmd.output, "{ 'word': v:val }"))
         return result
     else
-        echoerr 'swift/developer_dir: mdfind error'
-        for line in stderr
-            echo line
+        call unite#print_source_error('mdfind error', self.name)
+        for line in cmd.output
+            call unite#print_source_error(line, self.name)
         endfor
         return []
     endif
