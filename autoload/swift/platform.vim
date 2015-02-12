@@ -236,7 +236,7 @@ function! swift#platform#getPlatformInfo(platform)
             echom "Error: No device specified for platform iphonesimulator"
             echohl None
             echo "Please set b:swift_device or g:swift_device and try again."
-            if s:hasUnite()
+            if swift#util#has_unite()
                 echo "Type `"
                 echohl PreProc
                 echon ":Unite swift/device"
@@ -321,13 +321,3 @@ let swift#platform#32bitDevices = [
             \ 'com.apple.CoreSimulator.SimDeviceType.iPad-2',
             \ 'com.apple.CoreSimulator.SimDeviceType.iPad-Retina'
             \]
-
-function! s:hasUnite()
-    if !exists('*unite#version')
-        try
-            call unite#version()
-        catch
-        endtry
-    endif
-    return exists('*unite#version')
-endfunction

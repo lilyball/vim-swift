@@ -14,6 +14,17 @@ function! swift#util#has_vimproc()
   return exists('*vimproc#version')
 endfunction
 
+" Returns 1 if unite is available
+function! swift#util#has_unite()
+    if !exists('*unite#version')
+        try
+            call unite#version()
+        catch
+        endtry
+    endif
+    return exists('*unite#version')
+endfunction
+
 " Usage:
 "   swift#util#system({cmd}[, {pwd}])
 "   swift#util#system({args}[, {pwd}])
