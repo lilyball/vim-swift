@@ -279,9 +279,13 @@ endfunction
 function! swift#platform#argsForPlatformInfo(platformInfo)
     let sdkInfo = swift#platform#sdkInfo(a:platformInfo.platform)
     let args = ['-sdk', sdkInfo.path]
+    " add the SDKPlatformPath/Developer/Library/Frameworks so XCTest works
     let devFrameworks = sdkInfo.platformPath . '/Developer/Library/Frameworks'
     let args += ['-F', devFrameworks]
     let args += ['-Xlinker', '-rpath', '-Xlinker', devFrameworks]
+    " We also need -lswiftCore or xctest will crash when running it, I don't
+    " know why. This should be harmless when not using xctest.
+    let args += ['-lswiftCore']
     if a:platformInfo.platform == 'macosx'
         return args
     elseif a:platformInfo.platform == 'iphonesimulator'
@@ -304,8 +308,8 @@ endfunction
 " The dictionary values may be "" if an error occurs.
 function! swift#platform#sdkInfo(sdkname)
     " it's actually faster to run xcrun twice than to run xcodebuild once.
-    let pathCmd = swift#util#system('xcrun -show-sdk-path -sdk ' . a:sdkname)
-    let platformPathCmd = swift#util#system('xcrun -show-sdk-platform-path -sdk ' . a:sdkname)
+    let pathCmd = swift#util#system('xcrun -show-sdk-path -sdk ' . shellescape(a:sdkname))
+    let platformPathCmd = swift#util#system('xcrun -show-sdk-platform-path -sdk ' . shellescape(a:sdkname))
     return {
                 \ 'path': pathCmd.status != 0 || empty(pathCmd.output) ? "" : pathCmd.output[0],
                 \ 'platformPath': platformPathCmd.status != 0 || empty(platformPathCmd.output) ?
@@ -326,6 +330,15 @@ function! swift#platform#commandStringForExecutable(exepath, platformInfo)
     else
         return shellescape(a:exepath)
     endif
+endfunction
+
+" Arguments:
+"   {exepath} - Path to an executable
+"   {platformInfo} - Platform Info
+" Returns:
+"   A string that can be passed to ! to run the binary with xctest.
+function! swift#platform#xctestStringForExecutable(exepath, platformInfo)
+    return 'xcrun -sdk ' . shellescape(a:platformInfo.platform) . ' xctest ' . shellescape(a:exepath)
 endfunction
 
 " We can't easily test what architectures a device supports

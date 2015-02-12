@@ -23,10 +23,10 @@ function! swift#Run(bang, args)
 	let b:swift_last_swift_args = l:swift_args
 	let b:swift_last_args = l:args
 
-	call s:WithPath(function("s:Run"), swift_args, args)
+	call s:WithPath(function("s:Run"), swift_args, args, 0)
 endfunction
 
-function! s:Run(dict, swift_args, args)
+function! s:Run(dict, swift_args, args, xctest)
 	let exepath = a:dict.tmpdir.'/'.fnamemodify(a:dict.path, ':t:r')
 	if has('win32')
 		let exepath .= '.exe'
@@ -52,7 +52,11 @@ function! s:Run(dict, swift_args, args)
 		echohl None
 	endif
 	if cmd.status == 0
-		let path = swift#platform#commandStringForExecutable(exepath, platformInfo)
+		if a:xctest
+			let path = swift#platform#xctestStringForExecutable(exepath, platformInfo)
+		else
+			let path = swift#platform#commandStringForExecutable(exepath, platformInfo)
+		endif
 		exe '!' . path . ' ' . join(map(a:args, 'shellescape(v:val)'))
 	endif
 endfunction
@@ -153,6 +157,13 @@ function! s:Emit(dict, tab, type, args)
 			endif
 		endif
 	endtry
+endfunction
+
+" RunTests {{{1
+
+function! swift#RunTests(args)
+	let args = s:ShellTokenize(a:args)
+	call s:WithPath(function("s:Run"), args, [], 1)
 endfunction
 
 " Version {{{1

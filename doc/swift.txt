@@ -171,9 +171,9 @@ COMMANDS                                                      *swift-commands*
 		compile time}
 
 :SwiftEmitHeader [args]                                     *:SwiftEmitHeader*
-		Compiles the current file and displays a synthesized Objective-C
-		header in a new split. The current file will always be written
-		to a temporary buffer first.
+		Compiles the current file and displays a synthesized
+		Objective-C header in a new split. The current file will
+		always be written to a temporary buffer first.
 
 		The arguments given to |:SwiftEmitHeader| will be passed to
 		swiftc.
@@ -183,6 +183,18 @@ COMMANDS                                                      *swift-commands*
 		new tab instead.
 		{not available when the |+windows| feature was disabled at
 		compile time}
+
+:SwiftRunTests [args]                                         *:SwiftRunTests*
+		Compiles the current file and runs it using the `xctest` test
+		runner.
+
+		The arguments given to |:SwiftRunTests| will be passed to
+		swiftc.
+
+		Note: This seems to work when all the tests pass, but failed
+		test assertions cause the test runner to exit with code 11. I
+		don't know what's going on. This also doesn't seem to work
+		with iOS files.
 
 :SwiftVersion                                                  *:SwiftVersion*
 		Prints the current Swift compiler version.
