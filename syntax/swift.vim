@@ -198,7 +198,7 @@ let s:functions = [
             \ 'withExtendedLifetime', 'withUnsafeMutablePointer', 'withUnsafeMutablePointers', 'withUnsafePointer',
             \ 'withUnsafePointers', 'withVaList', 'zip'
             \]
-let s:functions_re = '\<\%(\.\@1<!\|\%(\.\@1<!Swift\.\)\@6<=\)\%('.join(s:functions, '\|').'\)\>'
+let s:functions_re = '\<\%(\.\@1<!\|\%(\.\@1<!Swift\.\)\@6<=\)\%('.join(s:functions, '\|').'\)\>\ze('
 exe 'syn match swiftStdlibFunction /'.s:functions_re.'/ display'
 syn cluster swiftExprs add=swiftStdlibFunction
 
