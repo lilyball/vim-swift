@@ -90,7 +90,7 @@ else
     let output = system(l:cmd)
     let status = v:shell_error
     let lines = split(output, '\r*\n', 1)
-    if !empty(lines) && empty(lines[1])
+    if !empty(lines) && empty(lines[-1])
       call remove(lines, -1)
     endif
     return { 'status': status, 'output': lines }
