@@ -383,6 +383,10 @@ syn keyword swiftBuildConfigurationArch x86_64 arm arm64 i386 contained
 
 syn cluster swiftExprs add=swiftConditionalCompilation
 
+" Shebang {{{2
+
+syn region swiftShebang excludenl start=/^\%1l#!/ end=/$/ oneline
+
 " Default highlighting {{{1
 
 hi def link swiftKeyword Keyword
@@ -446,6 +450,8 @@ hi def link swiftCommentBlockMark PreProc
 hi def link swiftConditionalCompilation PreProc
 hi def link swiftBuildConfiguration swiftConditionalCompilation
 hi def link swiftBuildConfigurationOS Special
+
+hi def link swiftShebang swiftCommentLine
 
 " }}}1
 
