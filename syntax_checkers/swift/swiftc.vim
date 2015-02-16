@@ -1,12 +1,12 @@
-" File: syntax_checkers/swift/swift.vim
+" File: syntax_checkers/swift/swiftc.vim
 " Author: Kevin Ballard
 " Description: Syntastic checker for Swift
-" Last Change: Feb 10, 2015
+" Last Change: Feb 16, 2015
 
-if exists("g:loaded_syntastic_swift_swift_checker")
+if exists("g:loaded_syntastic_swift_swiftc_checker")
     finish
 endif
-let g:loaded_syntastic_swift_swift_checker = 1
+let g:loaded_syntastic_swift_swiftc_checker = 1
 
 let s:save_cpo = &cpo
 set cpo&vim
@@ -19,7 +19,7 @@ function! s:getExec(dict, fallback, ...)
     return a:fallback ? a:dict.getExec() : ''
 endfunction
 
-function! SyntaxCheckers_swift_swift_IsAvailable() dict
+function! SyntaxCheckers_swift_swiftc_IsAvailable() dict
     let exec = s:getExec(self, 0, '-find')
     if !empty(exec)
         call system(exec)
@@ -29,7 +29,7 @@ function! SyntaxCheckers_swift_swift_IsAvailable() dict
     return executable(exec)
 endfunction
 
-function! SyntaxCheckers_swift_swift_GetLocList() dict
+function! SyntaxCheckers_swift_swiftc_GetLocList() dict
     let platformInfo = swift#platform#getPlatformInfo(swift#platform#detect())
     if empty(platformInfo)
         return []
@@ -55,7 +55,7 @@ endfunction
 
 call g:SyntasticRegistry.CreateAndRegisterChecker({
             \ 'filetype': 'swift',
-            \ 'name': 'swift',
+            \ 'name': 'swiftc',
             \ 'exec': 'xcrun swiftc'})
 
 let &cpo = s:save_cpo

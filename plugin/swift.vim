@@ -23,7 +23,7 @@ endif
 " Let's disable it for our users by setting g:syntastic_swift_checkers if the
 " user hasn't already set it.
 if !exists('g:syntastic_swift_checkers')
-    let g:syntastic_swift_checkers = ['swift']
+    let g:syntastic_swift_checkers = ['swiftc']
 endif
 
 let &cpo = s:save_cpo
