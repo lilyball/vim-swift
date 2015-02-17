@@ -1,7 +1,7 @@
 " File: syntax_checkers/swift/swiftc.vim
 " Author: Kevin Ballard
 " Description: Syntastic checker for Swift
-" Last Change: Feb 16, 2015
+" Last Change: Feb 17, 2015
 
 if exists("g:loaded_syntastic_swift_swiftc_checker")
     finish
@@ -11,21 +11,12 @@ let g:loaded_syntastic_swift_swiftc_checker = 1
 let s:save_cpo = &cpo
 set cpo&vim
 
-function! s:getExec(dict, fallback, ...)
-    let exec = a:dict.getExec()
-    if exec =~? '^\%(xcrun\s\+\)\?swiftc\s*$'
-        return call(function('swift#swiftc'), a:000)
-    endif
-    return a:fallback ? a:dict.getExec() : ''
-endfunction
-
 function! SyntaxCheckers_swift_swiftc_IsAvailable() dict
-    let exec = s:getExec(self, 0, '-find')
-    if !empty(exec)
-        call system(exec)
+    let exec = self.getExec()
+    if exec ==? 'swiftc'
+        call system(swift#swiftc('-find'))
         return v:shell_error == 0
     endif
-    let exec = self.getExec()
     return executable(exec)
 endfunction
 
@@ -36,9 +27,15 @@ function! SyntaxCheckers_swift_swiftc_GetLocList() dict
     endif
     let args = swift#platform#argsForPlatformInfo(platformInfo)
 
-    " disable escaping on the exe
+    let exec = self.getExec()
+    if exec ==? 'swiftc'
+        let exe = swift#swiftc()
+    else
+        let exe = syntastic#util#shescape(exec)
+    endif
+
     let makeprg = self.makeprgBuild({
-                \ 'exe': s:getExec(self, 1),
+                \ 'exe': exe,
                 \ 'args_before': args,
                 \ 'args': '-parse'})
 
@@ -55,8 +52,7 @@ endfunction
 
 call g:SyntasticRegistry.CreateAndRegisterChecker({
             \ 'filetype': 'swift',
-            \ 'name': 'swiftc',
-            \ 'exec': 'xcrun swiftc'})
+            \ 'name': 'swiftc'})
 
 let &cpo = s:save_cpo
 unlet s:save_cpo
