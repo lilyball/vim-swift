@@ -85,7 +85,7 @@ function! swift#platform#detect()
                 while 1
                     let start = match(line, '/\*\|\*/', start)
                     if start < 0 | break | endif
-                    if line[start:start+1] == '/*'
+                    if line[start : start+1] == '/*'
                         let commentnest+=1
                     elseif commentnest > 0
                         let commentnest-=1
@@ -93,6 +93,7 @@ function! swift#platform#detect()
                         " invalid syntax, cancel the whole line
                         break
                     endif
+                    let start += 1
                 endwhile
             endfor
         endif
