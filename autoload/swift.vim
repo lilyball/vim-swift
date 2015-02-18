@@ -224,10 +224,13 @@ function! s:WithPath(func, ...)
 			let saved.mod = &mod
 			set nomod
 
-			silent exe 'keepalt write! ' . fnameescape(dict.path)
-			if pathisempty
-				silent keepalt 0file
-			endif
+			try
+				silent exe 'keepalt write! ' . fnameescape(dict.path)
+			finally
+				if pathisempty
+					silent keepalt 0file
+				endif
+			endtry
 		else
 			let dict.istemp = 0
 			update
