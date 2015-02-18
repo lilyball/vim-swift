@@ -37,7 +37,7 @@ function! SyntaxCheckers_swift_swiftc_GetLocList() dict
     let makeprg = self.makeprgBuild({
                 \ 'exe': exe,
                 \ 'args_before': args,
-                \ 'args': '-parse'})
+                \ 'args_after': '-parse'})
 
     let errorformat =
                 \ '%E%f:%l:%c: error: %m,' .
