@@ -369,10 +369,10 @@ syn cluster swiftExprs add=swiftCommentLine,swiftCommentBlock,swiftDocCommentLin
 
 " Conditional Compilation {{{2
 
-syn region swiftConditionalCompilation excludenl start=/^#if\>/ end=/$/ contains=swiftBuildConfiguration oneline
-syn region swiftConditionalCompilation excludenl start=/^#else\>/ end=/$/ oneline
-syn region swiftConditionalCompilation excludenl start=/^#elseif\>/ end=/$/ contains=swiftBuildConfiguration oneline
-syn region swiftConditionalCompilation excludenl start=/^#endif\>/ end=/$/ oneline
+syn region swiftConditionalCompilation excludenl start=/^\s*#if\>/ end=/$/ contains=swiftBuildConfiguration oneline
+syn region swiftConditionalCompilation excludenl start=/^\s*#else\>/ end=/$/ oneline
+syn region swiftConditionalCompilation excludenl start=/^\s*#elseif\>/ end=/$/ contains=swiftBuildConfiguration oneline
+syn region swiftConditionalCompilation excludenl start=/^\s*#endif\>/ end=/$/ oneline
 
 syn match swiftBuildConfiguration /\<os([^)]*)/ contained contains=swiftBuildConfigurationOS
 syn match swiftBuildConfiguration /\<arch([^)]*)/ contained contains=swiftBuildConfigurationArch
