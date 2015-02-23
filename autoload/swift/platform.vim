@@ -166,9 +166,14 @@ function! swift#platform#simDeviceInfo(...)
                 let deviceTypes[matches[1]] = matches[2]
             endif
         elseif state == 2 " Runtimes
-            let matches = matchlist(line, '^\s*\(\w\&[^(]*\w\)\s\+(\([0-9.]\+\)\s*-\s*\([^)]\+\))\s\+(\([^)]*\))\s*$')
+            let matches = matchlist(line, '^\s*\(\w\&[^(]*\w\)\s\+(\([0-9.]\+\)\s*-\s*\([^)]\+\))\s\+(\([^)]*\))\%(\s\+(\([^)]*\))\)\?\s*$')
             if empty(matches)
                 let state = -1
+            elseif matches[5] =~? '^unavailable\>'
+                " the runtime is unavailable
+                " record it for now in case any devices show up for this
+                " runtime, and filter it out after.
+                let runtimes[matches[1]] = { 'unavailable': 1 }
             else
                 let runtimes[matches[1]] = {
                             \ 'name': matches[1],
@@ -216,7 +221,7 @@ function! swift#platform#simDeviceInfo(...)
         let device.type = get(deviceTypes, device.name, '')
         let device.runtime = get(runtimes, device.runtime, {})
     endfor
-    return devices
+    return filter(devices, 'get(v:val.runtime, "unavailable", 0) == 0')
 endfunction
 
 " Arguments:
