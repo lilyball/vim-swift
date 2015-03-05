@@ -160,6 +160,7 @@ syn keyword swiftType MirrorDisposition QuickLookObject
 syn keyword swiftType UnicodeDecodingResult
 syn keyword swiftType RawRepresentable
 syn keyword swiftType NonObjectiveCBase
+syn keyword swiftType Selector
 
 syn cluster swiftExprs add=swiftType
 
