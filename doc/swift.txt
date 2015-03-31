@@ -62,7 +62,7 @@ g:swift_platform~
 	This option may also be specified as *w:swift_platform* or
 	*b:swift_platform*
 
-	If *b:swift_platform* is unset, this option can be inferred from a
+	If |g:swift_platform| is unset, this option can be inferred from a
 	comment in the file of the form: >
 	    // swift: platform=iphoneos
 <
