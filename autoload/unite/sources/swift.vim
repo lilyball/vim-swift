@@ -107,7 +107,7 @@ let s:source_dev_dir.action_table.set_buffer = {
             \}
 function! s:source_dev_dir.action_table.set_buffer.func(candidate) "{{{
     if empty(a:candidate.word)
-        unlet b:swift_developer_dir
+        unlet! b:swift_developer_dir
     else
         let b:swift_developer_dir = a:candidate.word
     endif
@@ -119,7 +119,7 @@ let s:source_dev_dir.action_table.set_global = {
             \}
 function! s:source_dev_dir.action_table.set_global.func(candidate) "{{{
     if empty(a:candidate.word)
-        unlet g:swift_developer_dir
+        unlet! g:swift_developer_dir
     else
         let g:swift_developer_dir = a:candidate.word
     endif
