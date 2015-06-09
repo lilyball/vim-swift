@@ -14,7 +14,7 @@ set cpo&vim
 function! SyntaxCheckers_swift_swiftc_IsAvailable() dict
     let exec = self.getExec()
     if exec ==? 'swiftc'
-        call system(swift#swiftc('-find'))
+        call system(swift#xcrun('-find', 'swiftc'))
         return v:shell_error == 0
     endif
     return executable(exec)
@@ -29,7 +29,7 @@ function! SyntaxCheckers_swift_swiftc_GetLocList() dict
 
     let exec = self.getExec()
     if exec ==? 'swiftc'
-        let exe = swift#swiftc()
+        let exe = swift#xcrun('swiftc')
     else
         let exe = syntastic#util#shescape(exec)
     endif

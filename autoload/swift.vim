@@ -40,7 +40,7 @@ function! s:Run(dict, swift_args, args, verbose, xctest)
 	let sourcepath = get(a:dict, 'tmpdir_relpath', a:dict.path)
 	let swift_args += [sourcepath, '-o', exepath] + a:swift_args
 
-	let swift = swift#swiftc()
+	let swift = swift#xcrun('swiftc')
 
 	let pwd = a:dict.istemp ? a:dict.tmpdir : ''
 	let cmdstr = swift.' '.join(map(swift_args, 'shellescape(v:val)'))
@@ -109,7 +109,7 @@ function! s:Emit(dict, tab, type, args)
 		let args += a:args
 		let args += ['--', get(a:dict, 'tmpdir_relpath', a:dict.path)]
 
-		let swift = swift#swiftc()
+		let swift = swift#xcrun('swiftc')
 
 		let pwd = a:dict.istemp ? a:dict.tmpdir : ''
 		let cmd = swift#util#system(swift.' '.join(map(args, 'shellescape(v:val)')), pwd)
@@ -173,7 +173,7 @@ endfunction
 " Version {{{1
 
 function! swift#PrintVersion()
-	let cmd = swift#swiftc() . ' -version'
+	let cmd = swift#xcrun('swiftc', '-version')
 	let output = system(l:cmd)
 	let output = substitute(output, '\_s\+\%$', '', '')
 	if v:shell_error == 0
@@ -287,21 +287,19 @@ function! s:RmDir(path)
 	silent exe "!rm -rf " . shellescape(a:path)
 endfunction
 
-" Returns a string that can be passed to the shell to invoke swiftc
-" Optional argument is flags to pass to xcrun.
-function! swift#swiftc(...)
+" Returns a string that can be passed to the shell to invoke xcrun
+" Optional arguments are escaped and joined with spaces to the string.
+function! swift#xcrun(...)
 	let l:key = 'swift_developer_dir'
 	let developer_dir = get(b:, l:key, get(w:, l:key, get(g:, l:key, '')))
 	if empty(developer_dir)
-		let result = ''
+		let result = 'xcrun'
 	else
-		let result = 'env '.shellescape('DEVELOPER_DIR='.developer_dir).' '
+		let result = 'env '.shellescape('DEVELOPER_DIR='.developer_dir).' xcrun'
 	endif
-	let result .= 'xcrun '
 	if a:0 > 0
-		let result .= a:1.' '
+		let result .= ' '.join(map(copy(a:000), 'shellescape(v:val)'))
 	endif
-	let result .= 'swiftc'
 	return result
 endfunction
 

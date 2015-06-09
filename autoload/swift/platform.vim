@@ -125,7 +125,7 @@ endfunction
 " If an error occurs with simctl, a message is echoed and {} is returned.
 " Unavailable devices are not returned.
 function! swift#platform#simDeviceInfo(...)
-    let cmd = swift#util#system('xcrun simctl list')
+    let cmd = swift#util#system(swift#xcrun('simctl', 'list'))
     if cmd.status
         redraw
         echohl ErrorMsg
@@ -314,8 +314,8 @@ endfunction
 " The dictionary values may be "" if an error occurs.
 function! swift#platform#sdkInfo(sdkname)
     " it's actually faster to run xcrun twice than to run xcodebuild once.
-    let pathCmd = swift#util#system('xcrun -show-sdk-path -sdk ' . shellescape(a:sdkname))
-    let platformPathCmd = swift#util#system('xcrun -show-sdk-platform-path -sdk ' . shellescape(a:sdkname))
+    let pathCmd = swift#util#system(swift#xcrun('-show-sdk-path', '-sdk', a:sdkname))
+    let platformPathCmd = swift#util#system(swift#xcrun('-show-sdk-platform-path', '-sdk', a:sdkname))
     return {
                 \ 'path': pathCmd.status != 0 || empty(pathCmd.output) ? "" : pathCmd.output[0],
                 \ 'platformPath': platformPathCmd.status != 0 || empty(platformPathCmd.output) ?
@@ -330,7 +330,7 @@ endfunction
 "   A string that can be passed to ! to execute the binary.
 function! swift#platform#commandStringForExecutable(exepath, platformInfo)
     if a:platformInfo.platform ==# 'iphonesimulator'
-        let path = 'xcrun simctl spawn '
+        let path = swift#xcrun('simctl', 'spawn')
         let path .= shellescape(a:platformInfo.deviceInfo.uuid)
         return path.' '.shellescape(a:exepath)
     else
@@ -344,7 +344,7 @@ endfunction
 " Returns:
 "   A string that can be passed to ! to run the binary with xctest.
 function! swift#platform#xctestStringForExecutable(exepath, platformInfo)
-    return 'xcrun -sdk ' . shellescape(a:platformInfo.platform) . ' xctest ' . shellescape(a:exepath)
+    return swift#xcrun('-sdk', a:platformInfo.platform, 'xctest', a:exepath)
 endfunction
 
 " We can't easily test what architectures a device supports
