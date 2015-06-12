@@ -330,9 +330,7 @@ endfunction
 "   A string that can be passed to ! to execute the binary.
 function! swift#platform#commandStringForExecutable(exepath, platformInfo)
     if a:platformInfo.platform ==# 'iphonesimulator'
-        let path = swift#xcrun('simctl', 'spawn')
-        let path .= shellescape(a:platformInfo.deviceInfo.uuid)
-        return path.' '.shellescape(a:exepath)
+        return swift#xcrun('simctl', 'spawn', a:platformInfo.deviceInfo.uuid, a:exepath)
     else
         return shellescape(a:exepath)
     endif
