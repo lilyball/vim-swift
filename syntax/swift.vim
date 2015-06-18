@@ -119,6 +119,8 @@ syn keyword swiftType Array Dictionary Set Slice
 syn keyword swiftType Optional ImplicitlyUnwrappedOptional
 syn keyword swiftType ContiguousArray
 syn keyword swiftType ManagedBuffer ManagedBufferPointer ManagedProtoBuffer
+syn keyword swiftType ArraySlice DictionaryLiteral
+syn keyword swiftType SetIndex DictionaryIndex
 
 " String-related types
 syn keyword swiftType String StaticString UTF8 UTF16 UTF32 UnicodeScalar Character
@@ -139,9 +141,15 @@ syn keyword swiftType LazyForwardCollection LazyBidirectionalCollection LazyRand
 syn keyword swiftType FilterCollectionView FilterSequenceView MapCollectionView MapSequenceView
 syn keyword swiftType BidirectionalReverseView RandomAccessReverseView
 syn keyword swiftType UnsafeBufferPointerGenerator
-syn keyword swiftType EmptyCollection GeneratorOf SequenceOf GeneratorSequence
+syn keyword swiftType EmptyCollection EmptyGenerator
+syn keyword swiftType GeneratorOf SequenceOf GeneratorSequence
 syn keyword swiftType CollectionOfOne GeneratorOfOne
 syn keyword swiftType Zip2 Repeat PermutationGenerator
+syn keyword swiftType AnyBidirectionalCollection AnyBidirectionalIndex
+syn keyword swiftType AnyForwardCollection AnyForwardIndex
+syn keyword swiftType AnyRandomAccessCollection AnyRandomAccessIndex
+syn keyword swiftType AnySequence AnyGenerator IndexingGenerator
+syn keyword swiftType SinkOf
 
 " C compatibility
 syn keyword swiftType CInt CUnsignedInt CShort CUnsignedShort CLong CUnsignedLong CLongLong CUnsignedLongLong
@@ -158,6 +166,7 @@ syn keyword swiftType UnicodeDecodingResult
 syn keyword swiftType RawRepresentable
 syn keyword swiftType NonObjectiveCBase
 syn keyword swiftType Selector
+syn keyword swiftType RawByte
 
 syn cluster swiftExprs add=swiftType
 
@@ -173,11 +182,15 @@ syn keyword swiftProtocol IntegerType SignedIntegerType UnsignedIntegerType Bool
 syn keyword swiftProtocol SignedNumberType AbsoluteValuable IntervalType
 syn keyword swiftProtocol IntegerArithmeticType
 syn keyword swiftProtocol CollectionType MutableCollectionType SequenceType GeneratorType
-syn keyword swiftProtocol RawOptionSetType BitwiseOperationsType
+syn keyword swiftProtocol RawOptionSetType BitwiseOperationsType OptionSetType SetAlgebraType
 syn keyword swiftProtocol OutputStreamType SinkType
 syn keyword swiftProtocol ExtensibleCollectionType
 syn keyword swiftProtocol MirrorType
 syn keyword swiftProtocol StringElementType
+syn keyword swiftProtocol AnyCollectionType
+syn keyword swiftProtocol CustomDebugStringConvertible CustomStringConvertible
+syn keyword swiftProtocol CustomLeafReflectable CustomPlaygroundQuickLookable CustomReflectable
+syn keyword swiftProtocol ErrorType
 
 syn cluster swiftExprs add=swiftProtocol
 
@@ -192,10 +205,11 @@ let s:functions = [
             \ 'preconditionFailure', 'prefix', 'print', 'println', 'reduce', 'reflect', 'removeAll', 'removeAtIndex',
             \ 'removeLast', 'removeRange', 'reverse', 'sizeof', 'sizeofValue', 'sort', 'sorted', 'splice', 'split',
             \ 'startsWith', 'stride', 'strideof', 'strideofValue', 'suffix', 'swap', 'toDebugString', 'toString',
-            \ 'transcode', 'underestimateCount', 'unsafeAddressOf', 'unsafeBitCast', 'unsafeDowncast',
+            \ 'transcode', 'underestimateCount', 'unsafeAddressOf', 'unsafeBitCast', 'unsafeDowncast', 'unsafeUnwrap',
             \ 'withExtendedLifetime', 'withUnsafeMutablePointer', 'withUnsafeMutablePointers', 'withUnsafePointer',
             \ 'withUnsafePointers', 'withVaList', 'zip'
             \]
+let s:functions += ['anyGenerator', 'readLine'] " Swift 2
 let s:functions_re = '\<\%(\.\@1<!\|\%(\.\@1<!Swift\.\)\@6<=\)\%('.join(s:functions, '\|').'\)\>\ze('
 exe 'syn match swiftStdlibFunction /'.s:functions_re.'/ display'
 syn cluster swiftExprs add=swiftStdlibFunction
