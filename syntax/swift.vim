@@ -14,9 +14,7 @@ endif
 " We want it to match anything from identifier-character
 " Unfortunately we can only match unicode values up to 0xFF, anything higher
 " is assumed to be contained. But it's better than nothing
-let &l:iskeyword = '@,' " isalpha(), should cover [a-zA-Z]
-            \ . '48-57,' " 0-9
-            \ . '_,'
+let &l:iskeyword = '@,48-57,_,'
             \ . '168,170,173,175,178-181,183-186,'
             \ . '188-190,192-214,216-246,248-255'
 let &l:isident = &l:iskeyword
