@@ -40,7 +40,7 @@ syn cluster swiftExprs contains=NONE
 " Define a few lists that we're going to need later
 " These are all regex snippets, with implied word boundaries
 let s:declarations = ['class', 'struct', 'enum', 'protocol', 'extension',
-            \'var', 'func', 'subscript', 'init', 'deinit', 'operator']
+            \'let', 'var', 'func', 'subscript', 'init', 'deinit', 'operator']
 let s:modifiers = ['final', 'lazy', 'optional', 'required', 'override',
             \'dynamic', 'prefix', 'infix', 'postfix', 'convenience', 'weak',
             \'unowned', 'mutating', 'nonmutating']
@@ -87,13 +87,12 @@ syn cluster swiftItems add=swiftAccessControl
 
 " Other keywords {{{3
 
-syn keyword swiftKeyword import let
-syn keyword swiftKeyword static typealias
-syn keyword swiftKeyword break case continue default do else fallthrough if in
-syn keyword swiftKeyword for return switch where while
-syn keyword swiftKeyword dynamicType is super self Self
-syn keyword swiftKeyword __COLUMN__ __FILE__ __FUNCTION__ __LINE__
+syn keyword swiftKeyword import static typealias
+syn keyword swiftKeyword break case continue default defer do else fallthrough for guard
+syn keyword swiftKeyword if in repeat return switch where while
 syn match swiftKeyword ,\<as\>[?!]\?,
+syn keyword swiftKeyword catch dynamicType is rethrows super self Self throw throws try
+syn keyword swiftKeyword __COLUMN__ __FILE__ __FUNCTION__ __LINE__
 
 " Special types {{{3
 
@@ -269,7 +268,7 @@ syn match swiftClosureCaptureListOwnership /\<\%(strong\>\|weak\>\|unowned\%((sa
 syn match swiftPlaceholder /\$\d\+/ contained
 
 syn match swiftAttribute /@\i\+/ nextgroup=swiftAttributeArguments skipwhite skipempty
-syn region swiftAttributeArguments matchgroup=swiftAttributeArguments start="(" end=")" contains=@swiftExprs,swiftAttributeArgumentsNest contained
+syn region swiftAttributeArguments matchgroup=swiftAttribute start="(" end=")" contains=@swiftExprs,swiftAttributeArgumentsNest contained
 syn region swiftAttributeArgumentsNest matchgroup=swiftAttributeArguments start="(" end=")" transparent contained
 syn region swiftAttributeArgumentsNest matchgroup=swiftAttributeArguments start="\[" end="\]" transparent contained
 syn region swiftAttributeArgumentsNest matchgroup=swiftAttributeArguments start="{" end="}" transparent contained
@@ -344,6 +343,16 @@ exe 'syn match swiftDeclarationModifier /'.s:modifiers_re.'\ze\%(\_s*'.s:modifie
 exe 'syn match swiftDeclarationModifier /\<\%(class\|static\)\>\ze\%(\_s*\w\+\%(\_s*(\_s*\w*\_s*)\)\=\)\{,}\_s*'.s:declarations_re.'/'
 syn cluster swiftItems add=swiftDeclarationModifier
 
+" Availability Condition {{{3
+
+syn match swiftAvailabilityCondition /#available\>/ nextgroup=swiftAvailabilityArguments skipwhite
+syn region swiftAvailabilityArguments matchgroup=swiftAvailabilityCondition start="(" end=")" contained contains=swiftAvailabilityPlatformName
+syn keyword swiftAvailabilityPlatformName OSX iOS watchOS iOSApplicationExtension OSXApplicationExtension contained nextgroup=swiftAvailabilityPlatformVersion skipwhite
+syn match swiftAvailabilityPlatformName /\*/ contained
+syn match swiftAvailabilityPlatformVersion /[0-9]\+\%(\.[0-9]\+\)\{,2}/ contained
+
+syn cluster swiftExprs add=swiftAvailabilityCondition
+
 " Comments {{{2
 
 syn region swiftCommentLine excludenl start="//" end="$" contains=@swiftCommentLineMarker,@Spell oneline
@@ -377,7 +386,7 @@ syn match swiftBuildConfiguration /\<os([^)]*)/ contained contains=swiftBuildCon
 syn match swiftBuildConfiguration /\<arch([^)]*)/ contained contains=swiftBuildConfigurationArch
 syn match swiftBuildConfiguration /\<\%(true\|false\)\>/ contained contains=swiftBoolean
 
-syn keyword swiftBuildConfigurationOS OSX iOS contained
+syn keyword swiftBuildConfigurationOS OSX iOS watchOS contained
 syn keyword swiftBuildConfigurationArch x86_64 arm arm64 i386 contained
 
 syn cluster swiftExprs add=swiftConditionalCompilation
@@ -417,7 +426,6 @@ hi def link swiftClosureCaptureListOwnership swiftKeyword
 hi def link swiftPlaceholder Identifier
 
 hi def link swiftAttribute          Macro
-hi def link swiftAttributeArguments Macro
 
 hi def link swiftOperatorDefKeywords swiftKeyword
 hi def link swiftOperatorPrecedence swiftKeyword
@@ -432,6 +440,10 @@ hi def link swiftSubscriptAttribute swiftKeyword
 hi def link swiftVarAttribute swiftKeyword
 
 hi def link swiftDeclarationModifier swiftKeyword
+
+hi def link swiftAvailabilityCondition Macro
+hi def link swiftAvailabilityPlatformName Special
+hi def link swiftAvailabilityPlatformVersion Number
 
 hi def link swiftCommentLine  Comment
 hi def link swiftCommentBlock swiftCommentLine
