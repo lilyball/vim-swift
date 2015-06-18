@@ -32,7 +32,7 @@ function! s:source_device.gather_candidates(args, context) "{{{
         call unite#print_source_error('Error fetching sim device info', self.name)
         return []
     endif
-    return map(copy(devices), "{ 'word': v:val.name, 'group': v:val.runtime.name }")
+    return map(copy(devices), "{ 'word': v:val.uuid, 'abbr': v:val.name, 'group': v:val.runtime.name }")
 endfunction "}}}
 
 function! s:source_device.hooks.on_post_filter(args, context) "{{{
@@ -44,7 +44,7 @@ function! s:source_device.hooks.on_post_filter(args, context) "{{{
                         \ '-- ' . candidate.word . ' --'
         else
             let candidate.abbr =
-                        \ '  ' . candidate.word
+                        \ '  ' . candidate.abbr
         endif
     endfor
 endfunction "}}}

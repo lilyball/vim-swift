@@ -258,7 +258,7 @@ function! swift#platform#getPlatformInfo(platform)
         let deviceInfo={}
         let found=0
         for deviceInfo in allDeviceInfo
-            if deviceInfo.name ==? a:platform.device
+            if deviceInfo.name ==? a:platform.device || deviceInfo.uuid ==? a:platform.device
                 let found=1
                 break
             endif
