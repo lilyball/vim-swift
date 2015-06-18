@@ -96,7 +96,11 @@ function! s:Emit(dict, tab, type, args)
 		let args = swift#platform#argsForPlatformInfo(platformInfo)
 		if a:type == 'objc-header'
 			" emitting the objc-header is a bit complicated
-			let args += ['-emit-objc-header-path', '-', '-parse-as-library', '-emit-module']
+			" Swift 2 does not allow for emitting the header to stdout with -
+			" (it actually does print it, but also prints an error), so we
+			" need to write it to a file instead.
+			let args += ['-emit-objc-header-path', a:dict.tmpdir.'/'.basename.'.h']
+			let args += ['-parse-as-library', '-emit-module']
 			" for some reason, even after all that, we still need to import an
 			" obj-c header before it will emit anything useful.
 			let args += ['-import-objc-header', '/dev/null']
@@ -125,7 +129,11 @@ function! s:Emit(dict, tab, type, args)
 			else
 				new
 			endif
-			silent put =cmd.output
+			if a:type == 'objc-header'
+				exe 'silent noautocmd keepalt read ++edit' fnameescape(a:dict.tmpdir.'/'.basename.'.h')
+			else
+				silent put =cmd.output
+			endif
 			1
 			d
 			if a:type == 'ir'
