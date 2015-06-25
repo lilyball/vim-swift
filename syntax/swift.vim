@@ -475,6 +475,7 @@ hi def link swiftCommentBlockMark PreProc
 hi def link swiftConditionalCompilation PreProc
 hi def link swiftBuildConfiguration swiftConditionalCompilation
 hi def link swiftBuildConfigurationOS Special
+hi def link swiftBuildConfigurationArch Special
 
 hi def link swiftShebang swiftCommentLine
 
