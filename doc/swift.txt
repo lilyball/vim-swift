@@ -45,7 +45,7 @@ g:swift_no_fold~
 g:swift_developer_dir~
 	Type: String
 	Set this option to a path to use for DEVELOPER_DIR: >
-		let g:swift_developer_dir='/Applications/Xcode-Beta.app'
+	    let g:swift_developer_dir='/Applications/Xcode-Beta.app'
 <
 	This option may also be specified as *w:swift_developer_dir* or
 	*b:swift_developer_dir*
@@ -101,6 +101,15 @@ g:swift_platform_detect_limit~
 	or *b:swift_platform_detect_limit*
 
 	The default value is 128.
+
+                                          *g:swift_suppress_showmatch_warning*
+g:swift_suppress_showmatch_warning~
+	Type: Number
+	Set this option to suppress the warning about using 'showmatch'. This
+	option is automatically set after the warning is displayed once to
+	prevent it from showing multiple times. >
+	    let g:swift_suppress_showmatch_warning = 1
+<
 
 ==============================================================================
 COMMANDS                                                      *swift-commands*
@@ -231,4 +240,4 @@ swift/developer_dir                   *swift-unite-source-swift-developer_dir*
 		system. The default action is to set |g:swift_developer_dir|.
 
 ==============================================================================
- vim:tw=78:sw=4:noet:ts=8:ft=help:norl:
+ vim:ft=help:tw=78:sw=4:noet:ts=8:norl:

@@ -115,11 +115,12 @@ if !exists('g:swift_setup_NERDCommenter')
 endif
 
 " Check for 'showmatch' because it doesn't work right with \()
-if &showmatch
+if &showmatch && !get(g:, 'swift_suppress_showmatch_warning', 0)
     echohl WarningMsg
     echomsg "Swift string interpolations do not work well with 'showmatch'"
     echohl None
     echomsg "It is recommended that you turn it off and use matchparen instead"
+    let g:swift_suppress_showmatch_warning = 1
 endif
 
 " Cleanup {{{1
