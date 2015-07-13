@@ -1,7 +1,7 @@
 " File: ftplugin/swift.vim
 " Author: Kevin Ballard
 " Description: Filetype plugin for Swift
-" Last Change: Jul 25, 2014
+" Last Change: Jul 12, 2015
 
 if exists("b:did_ftplugin")
     finish

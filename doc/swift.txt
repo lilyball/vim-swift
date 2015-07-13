@@ -8,6 +8,7 @@ CONTENTS                                                    *swift* *ft-swift*
 3. Commands                                                   |swift-commands|
 4. Mappings                                                   |swift-mappings|
 5. Unite Sources                                         |swift-unite-sources|
+6. FAQ                                                             |swift-faq|
 
 ==============================================================================
 INTRODUCTION                                                     *swift-intro*
@@ -27,7 +28,6 @@ g:swift_no_conceal~
 	Set this option to turn off |conceal| support: >
 	    let g:swift_no_conceal = 1
 <
-
                                                              *g:swift_no_fold*
 g:swift_no_fold~
 	Type: Number
@@ -56,7 +56,7 @@ g:swift_developer_dir~
 g:swift_platform~
 	Type: String
 	Set this option to the platform to compile the code for.
-	Possible values are "macosx" and "iphoneos": >
+	Possible values are "macosx" and "iphonesimulator": >
 	    let g:swift_platform = 'macosx'
 <
 	This option may also be specified as *w:swift_platform* or
@@ -64,12 +64,12 @@ g:swift_platform~
 
 	If |g:swift_platform| is unset, this option can be inferred from a
 	comment in the file of the form: >
-	    // swift: platform=iphoneos
+	    // swift: platform=iphonesimulator
 <
 	If unset, and if no comment is found as described above, if the file
 	includes an import for the 'UIKit' framework it is assumed to be
-	"iphoneos", and if the file includes an import for the 'AppKit' or
-	'Cocoa' frameworks it is assumed to be "macosx".
+	"iphonesimulator", and if the file includes an import for the 'AppKit'
+	or 'Cocoa' frameworks it is assumed to be "macosx".
 
 	If no value is set or inferred, it defaults to "macosx".
 
@@ -77,7 +77,7 @@ g:swift_platform~
 g:swift_device~
 	Type: String
 	The name of the configured iOS Simulator device to use when running
-	code for the "iphoneos" platform: >
+	code for the "iphonesimulator" platform: >
 	    let g:swift_device = 'iPhone 6'
 <
 	This option can also be specified as *w:swift_device* or
@@ -87,8 +87,8 @@ g:swift_device~
 	the form: >
 	    // swift: device=iPhone 6
 <
-	If unset, attempting to run code for the "iphoneos" platform will
-	fail.
+	If unset, attempting to run code for the "iphonesimulator" platform
+	will fail.
 
                                                *g:swift_platform_detect_limit*
 g:swift_platform_detect_limit~
@@ -110,7 +110,6 @@ g:swift_suppress_showmatch_warning~
 	prevent it from showing multiple times. >
 	    let g:swift_suppress_showmatch_warning = 1
 <
-
 ==============================================================================
 COMMANDS                                                      *swift-commands*
 
@@ -238,6 +237,23 @@ swift/developer_dir                   *swift-unite-source-swift-developer_dir*
 		Note: Requires |vimproc|.
 		Candidates are the available Xcode installations on the
 		system. The default action is to set |g:swift_developer_dir|.
+
+==============================================================================
+FAQ                                                                *swift-faq*
+
+Q: When I run |:SwiftRun| or press <D-r>, why do I get the following message?
+>
+    Error: no device specified for platform iphonesimulator
+    Please set b:swift_device or g:swift_device and try again.
+<
+A: Either you've set |g:swift_platform| to "iphonesimulator" or it's unset and
+the current file contains >
+	import UIKit
+<
+Under these conditions, the plugin will attempt to compile for the iOS
+Simulator instead of for OS X. In order to run the program in the iOS
+Simulator, it needs to know which simulator device to use. See
+|g:swift_device| for details.
 
 ==============================================================================
  vim:ft=help:tw=78:sw=4:noet:ts=8:norl:

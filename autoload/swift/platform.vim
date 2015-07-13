@@ -1,7 +1,7 @@
 " File: autoload/swift/platform.vim
 " Author: Kevin Ballard
 " Description: Platform support for Swift
-" Last Change: Jan 08, 2015
+" Last Change: Jul 12, 2015
 
 " Returns a dict containing the following keys:
 " - platform - required, value is "macosx" or "iphonesimulator"
@@ -241,7 +241,11 @@ function! swift#platform#getPlatformInfo(platform)
             echohl ErrorMsg
             echom "Error: No device specified for platform iphonesimulator"
             echohl None
-            echo "Please set b:swift_device or g:swift_device and try again."
+            echo "Please set "
+            echohl Identifier | echon "b:swift_device" | echohl None
+            echon " or "
+            echohl Identifier | echon "g:swift_device" | echohl None
+            echon " and try again."
             if swift#util#has_unite()
                 echo "Type `"
                 echohl PreProc
