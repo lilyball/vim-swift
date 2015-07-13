@@ -109,23 +109,38 @@ function! swift#platform#detect()
     return dict
 endfunction
 
+" Usage:
+"   swift#platform#simDeviceInfo()
+"   swift#platform#simDeviceInfo('runtimes')
 " Returns:
-"   List of dictionaries with the following keys:
-"     name: The device name
-"     uuid: The device UUID
-"     type: Device identifier, e.g. "com.apple.CoreSimulator.SimDeviceType.iPhone-6"
-"     state: Device state, e.g. "Shutdown"
-"     runtime: {
+"   Dictionary with the following keys:
+"     devices: [{
+"       name: The device name
+"       uuid: The device UUID
+"       type: Device identifier, e.g. "com.apple.CoreSimulator.SimDeviceType.iPhone-6"
+"       state: Device state, e.g. "Shutdown"
+"       runtime: {
+"         name: Runtime name, e.g. "iOS 8.2"
+"         version: Runtime version, e.g. "8.2"
+"         build: Runtime build, e.g. "12D5452a"
+"         identifier: Runtime identifier, e.g. "com.apple.CoreSimulator.SimRuntime.iOS-8-2"
+"       }
+"     }]
+"     runtimes: [{
 "       name: Runtime name, e.g. "iOS 8.2"
 "       version: Runtime version, e.g. "8.2"
 "       build: Runtime build, e.g. "12D5452a"
 "       identifier: Runtime identifier, e.g. "com.apple.CoreSimulator.SimRuntime.iOS-8-2"
-"     }
+"     }]
 "
 " If an error occurs with simctl, a message is echoed and {} is returned.
 " Unavailable devices are not returned.
 function! swift#platform#simDeviceInfo(...)
-    let cmd = swift#util#system(swift#xcrun('simctl', 'list'))
+    let args = ['simctl', 'list']
+    if a:0 > 0
+        call add(args, a:1)
+    endif
+    let cmd = swift#util#system(call('swift#xcrun', args))
     if cmd.status
         redraw
         echohl ErrorMsg
@@ -221,39 +236,88 @@ function! swift#platform#simDeviceInfo(...)
         let device.type = get(deviceTypes, device.name, '')
         let device.runtime = get(runtimes, device.runtime, {})
     endfor
-    return filter(devices, 'get(v:val.runtime, "unavailable", 0) == 0')
+    return {
+                \ 'devices': filter(devices, 'get(v:val.runtime, "unavailable", 0) == 0'),
+                \ 'runtimes': filter(values(runtimes), 'get(v:val, "unavailable", 0) == 0')
+                \}
 endfunction
 
+" Usage:
+"   swift#platform#getPlatformInfo({platform}[, {synthesize}])
 " Arguments:
 "   {platform} - A platform dictionary as returned by swift#platform#detect()
+"   {synthesize} - If 1, synthesize a result if the device is not set.
 " Returns:
-"   A copy of {platform} augmented with the following keys:
-"     deviceInfo - optional, included for the iphonesimulator platform
-"
 "   A copy of {platform} augmented with a 'deviceInfo' key if relevant,
 "   or {} if an error occurred (the error will be echoed).
-function! swift#platform#getPlatformInfo(platform)
+"
+"   If the device is synthesized (when {synthesize} is 1), the 'deviceInfo'
+"   key will not contain a 'type' or 'uuid' but will contain a key
+"   'synthesized' with the value 1.
+function! swift#platform#getPlatformInfo(platform, ...)
     if a:platform.platform == 'macosx'
         return copy(a:platform)
     elseif a:platform.platform == 'iphonesimulator'
         if empty(get(a:platform, 'device', {}))
-            redraw
-            echohl ErrorMsg
-            echom "Error: No device specified for platform iphonesimulator"
-            echohl None
-            echo "Please set "
-            echohl Identifier | echon "b:swift_device" | echohl None
-            echon " or "
-            echohl Identifier | echon "g:swift_device" | echohl None
-            echon " and try again."
-            if swift#util#has_unite()
-                echo "Type `"
-                echohl PreProc
-                echon ":Unite swift/device"
+            if get(a:, 1)
+                " synthesize device info
+                let allRuntimes = swift#platform#simDeviceInfo('runtimes')
+                if empty(allRuntimes)
+                    return []
+                endif
+                " use the runtime that corresponds to the SDK version if possible
+                let runtime = {}
+                let versionCmd = swift#util#system(swift#xcrun('-show-sdk-platform-version', '-sdk', a:platform.platform))
+                if versionCmd.status == 0 && !empty(versionCmd.output)
+                    for elem in allRuntimes.runtimes
+                        if elem.version == versionCmd.output[0]
+                            let runtime = elem
+                            break
+                        endif
+                    endfor
+                endif
+                if empty(runtime)
+                    " can't find a matching runtime? Pick the highest-numbered
+                    " one. SDK numbers should be just major.minor so we can
+                    " compare them as floats.
+                    for elem in allRuntimes.runtimes
+                        if empty(runtime) || str2float(elem.version) > str2float(runtime.version)
+                            let runtime = elem
+                        endif
+                    endfor
+                    if empty(runtime)
+                        redraw
+                        echohl ErrorMsg
+                        echo "Error: Can't find any valid iOS Simulator runtimes"
+                        echohl None
+                        return []
+                    endif
+                endif
+                let deviceInfo = {
+                            \ 'name': 'Synthesized Device',
+                            \ 'runtime': runtime,
+                            \ 'arch': 'x86_64'
+                            \}
+                return extend(copy(a:platform), {'deviceInfo': deviceInfo})
+            else
+                redraw
+                echohl ErrorMsg
+                echom "Error: No device specified for platform iphonesimulator"
                 echohl None
-                echon "` to select a device."
-            endif
-            return []
+                echo "Please set "
+                echohl Identifier | echon "b:swift_device" | echohl None
+                echon " or "
+                echohl Identifier | echon "g:swift_device" | echohl None
+                echon " and try again."
+                if swift#util#has_unite()
+                    echo "Type `"
+                    echohl PreProc
+                    echon ":Unite swift/device"
+                    echohl None
+                    echon "` to select a device."
+                endif
+                return []
+            end
         endif
         let allDeviceInfo = swift#platform#simDeviceInfo()
         if empty(allDeviceInfo)
@@ -261,7 +325,7 @@ function! swift#platform#getPlatformInfo(platform)
         endif
         let deviceInfo={}
         let found=0
-        for deviceInfo in allDeviceInfo
+        for deviceInfo in allDeviceInfo.devices
             if deviceInfo.name ==? a:platform.device || deviceInfo.uuid ==? a:platform.device
                 let found=1
                 break
@@ -300,9 +364,13 @@ function! swift#platform#argsForPlatformInfo(platformInfo)
         return args
     elseif a:platformInfo.platform == 'iphonesimulator'
         let deviceInfo = a:platformInfo.deviceInfo
-        let profile_plist = sdkInfo.platformPath . '/Developer/Library/CoreSimulator/Profiles/DeviceTypes/'
-        let profile_plist .= deviceInfo.name . '.simdevicetype/Contents/Resources/profile.plist'
-        let arch = swift#cache#read_plist_key(profile_plist, 'supportedArchs:0')
+        if get(deviceInfo, 'synthesized')
+            let arch = ''
+        else
+            let profile_plist = sdkInfo.platformPath . '/Developer/Library/CoreSimulator/Profiles/DeviceTypes/'
+            let profile_plist .= deviceInfo.name . '.simdevicetype/Contents/Resources/profile.plist'
+            let arch = swift#cache#read_plist_key(profile_plist, 'supportedArchs:0')
+        endif
         if empty(arch)
             let arch = 'x86_64'
         endif

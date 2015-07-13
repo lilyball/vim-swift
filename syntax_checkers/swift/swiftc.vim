@@ -1,7 +1,7 @@
 " File: syntax_checkers/swift/swiftc.vim
 " Author: Kevin Ballard
 " Description: Syntastic checker for Swift
-" Last Change: Feb 17, 2015
+" Last Change: Jul 12, 2015
 
 if exists("g:loaded_syntastic_swift_swiftc_checker")
     finish
@@ -21,7 +21,7 @@ function! SyntaxCheckers_swift_swiftc_IsAvailable() dict
 endfunction
 
 function! SyntaxCheckers_swift_swiftc_GetLocList() dict
-    let platformInfo = swift#platform#getPlatformInfo(swift#platform#detect())
+    let platformInfo = swift#platform#getPlatformInfo(swift#platform#detect(), 1)
     if empty(platformInfo)
         return []
     endif

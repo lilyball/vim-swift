@@ -1,7 +1,7 @@
 " File: unite/sources/swift.vim
 " Author: Kevin Ballard
 " Description: Unite sources file for Swift
-" Last Change: Jan 13, 2015
+" Last Change: Jul 12, 2015
 
 let s:save_cpo = &cpo
 set cpo&vim
@@ -26,13 +26,13 @@ let s:source_device = {
             \}
 
 function! s:source_device.gather_candidates(args, context) "{{{
-    let devices = swift#platform#simDeviceInfo()
-    if empty(devices)
+    let deviceInfo = swift#platform#simDeviceInfo()
+    if empty(deviceInfo)
         redraw
         call unite#print_source_error('Error fetching sim device info', self.name)
         return []
     endif
-    return map(copy(devices), "{ 'word': v:val.uuid, 'abbr': v:val.name, 'group': v:val.runtime.name }")
+    return map(copy(deviceInfo.devices), "{ 'word': v:val.uuid, 'abbr': v:val.name, 'group': v:val.runtime.name }")
 endfunction "}}}
 
 function! s:source_device.hooks.on_post_filter(args, context) "{{{
