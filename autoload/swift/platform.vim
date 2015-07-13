@@ -300,9 +300,10 @@ function! swift#platform#argsForPlatformInfo(platformInfo)
         return args
     elseif a:platformInfo.platform == 'iphonesimulator'
         let deviceInfo = a:platformInfo.deviceInfo
-        if index(g:swift#platform#32bitDevices, deviceInfo.type) >= 0
-            let arch = 'i386'
-        else
+        let profile_plist = sdkInfo.platformPath . '/Developer/Library/CoreSimulator/Profiles/DeviceTypes/'
+        let profile_plist .= deviceInfo.name . '.simdevicetype/Contents/Resources/profile.plist'
+        let arch = swift#cache#read_plist_key(profile_plist, 'supportedArchs:0')
+        if empty(arch)
             let arch = 'x86_64'
         endif
         let target = arch.'-apple-ios'.deviceInfo.runtime.version
@@ -348,12 +349,3 @@ endfunction
 function! swift#platform#xctestStringForExecutable(exepath, platformInfo)
     return swift#xcrun('-sdk', a:platformInfo.platform, 'xctest', a:exepath)
 endfunction
-
-" We can't easily test what architectures a device supports
-" so we're just blacklisting the known 32-bit devices.
-let swift#platform#32bitDevices = [
-            \ 'com.apple.CoreSimulator.SimDeviceType.iPhone-4s',
-            \ 'com.apple.CoreSimulator.SimDeviceType.iPhone-5',
-            \ 'com.apple.CoreSimulator.SimDeviceType.iPad-2',
-            \ 'com.apple.CoreSimulator.SimDeviceType.iPad-Retina'
-            \]
