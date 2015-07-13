@@ -7,6 +7,19 @@ if exists("b:current_syntax")
     finish
 endif
 
+" Version Compatibility {{{1
+
+" \@123<! was introduced in 7.3.1088.
+if v:version > 703 || v:version == 603 && has("patch1088")
+    function! s:lookbehind(count, type)
+        return '\@' . a:count . '<' . a:type
+    endfunction
+else
+    function! s:lookbehind(count, type)
+        return '\@<' . a:type
+    endfunction
+endif
+
 " Settings {{{1
 
 " iskeyword defines word characters, which affects \< and \>
@@ -96,7 +109,7 @@ syn keyword swiftKeyword __COLUMN__ __FILE__ __FUNCTION__ __LINE__
 
 " Special types {{{3
 
-syn match swiftKeyword /\.\@1<=\%(Type\|Protocol\)\>/ display
+exe 'syn match swiftKeyword /\.'.s:lookbehind(1,'=').'\%(Type\|Protocol\)\>/ display'
 
 " }}}3
 
@@ -210,7 +223,7 @@ let s:functions = [
             \ 'withUnsafePointers', 'withVaList', 'zip'
             \]
 let s:functions += ['anyGenerator', 'readLine'] " Swift 2
-let s:functions_re = '\<\%(\.\@1<!\|\%(\.\@1<!Swift\.\)\@6<=\)\%('.join(s:functions, '\|').'\)\>\ze('
+let s:functions_re = '\<\%(\.'.s:lookbehind(1,'!').'\|\%(\.'.s:lookbehind(1,'!').'Swift\.\)'.s:lookbehind(6,'=').'\)\%('.join(s:functions, '\|').'\)\>\ze('
 exe 'syn match swiftStdlibFunction /'.s:functions_re.'/ display'
 syn cluster swiftExprs add=swiftStdlibFunction
 
@@ -243,7 +256,7 @@ syn match swiftStringEscapeError display contained /\\./
 syn match swiftStringEscape contained /\\[0\\tnr"']/ extend
 syn match swiftStringEscapeError display contained /\\\%(x\x\{,2}\|u\x\{,4}\|U\x\{,8}\)/
 syn region swiftStringEscape matchgroup=swiftStringEscapeUnicode start="\\u{" end=/}\|\ze"/ display contained contains=swiftStringEscapeUnicodeError keepend
-syn region swiftStringEscapeUnicodeError start=/\_X\|{\@1<=\x\{8}\zs\_[^}]/ end=/}/ display contained
+exe 'syn region swiftStringEscapeUnicodeError start=/\_X\|{'.s:lookbehind(1,'=').'\x\{8}\zs\_[^}]/ end=/}/ display contained'
 
 syn region swiftInterpolation matchgroup=swiftInterpolationDelim start=/\\(/ end=/)/ contained oneline contains=@swiftDefs,@swiftItems,@swiftExprs
 
@@ -263,9 +276,9 @@ syn cluster swiftLiteral add=swiftNil
 
 " Library values {{{2
 
-syn match swiftLibraryValue /\.\@1<!\<Process\>/
+exe 'syn match swiftLibraryValue /\.'.s:lookbehind(1,'!').'\<Process\>/'
 
-syn match swiftLibraryEnumValue /\.\@1<=\%(Some\ze(\|None\>\)/
+exe 'syn match swiftLibraryEnumValue /\.'.s:lookbehind(1,'=').'\%(Some\ze(\|None\>\)/'
 
 syn cluster swiftExprs add=swiftLibraryValue,swiftLibraryEnumValue
 
