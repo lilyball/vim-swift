@@ -20,8 +20,8 @@ function! swift#Run(bang, args)
 		let swift_args = []
 	endif
 
-	let b:swift_last_swift_args = l:swift_args
-	let b:swift_last_args = l:args
+	let b:swift_last_swift_args = copy(l:swift_args)
+	let b:swift_last_args = copy(l:args)
 
 	call s:WithPath(function("s:Run"), swift_args, args, a:bang, 0)
 endfunction
